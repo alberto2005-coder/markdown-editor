@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Markdown Editor — Escribir y ver en vivo</title>
+<meta name="description" content="Editor de Markdown con pantalla partida en dos: escribe a la izquierda y mira la vista previa en vivo a la derecha." />
+<meta name="theme-color" content="#2563eb" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0f1420" media="(prefers-color-scheme: dark)" />
+<meta property="og:title" content="Markdown Editor" />
+<meta property="og:description" content="Crea, abre y guarda archivos .md con vista previa en vivo." />
+<meta property="og:image" content="assets/icon.svg" />
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="apple-touch-icon" href="assets/icon.svg" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ================= BARRA SUPERIOR ================= -->
+<header class="bar">
+  <div class="brand"><img src="assets/icon.svg" alt="" class="logo" /> <strong>Markdown</strong> Editor</div>
+
+  <input id="fileName" class="file-name" type="text" value="documento" spellcheck="false" title="Nombre del documento" />
+
+  <div class="actions">
+    <button id="btnNew" title="Nuevo documento (Ctrl+N)">＋ Nuevo</button>
+    <button id="btnOpen" title="Abrir un archivo .md del disco (Ctrl+O)">📂 Abrir</button>
+    <button id="btnSave" title="Guardar en Mis documentos y descargar el .md (Ctrl+S)">💾 Guardar</button>
+    <button id="btnDocs" title="Documentos guardados en este navegador">📚 Mis docs</button>
+    <button id="btnExport" title="Exportar y compartir">📤 Exportar ▾</button>
+    <button id="btnHelp" title="Guía rápida de Markdown y atajos">❓ Guía</button>
+    <button id="btnTheme" title="Cambiar tema" aria-label="Cambiar entre tema claro y oscuro">🌙</button>
+  </div>
+
+  <input type="file" id="fileInput" accept=".md,.markdown,.mdown,.txt,text/markdown,text/plain" hidden />
+</header>
+
+<!-- menú: exportar y compartir -->
+<div class="menu-pop" id="exportPop" hidden>
+  <button data-exp="md">⬇️ Descargar archivo .md</button>
+  <button data-exp="html">🌐 Exportar como página HTML</button>
+  <button data-exp="pdf">🖨️ Imprimir / guardar PDF</button>
+  <button data-exp="copy">📋 Copiar Markdown</button>
+  <button data-exp="share">🔗 Copiar enlace para compartir</button>
+</div>
+
+<!-- ================= BARRA DE FORMATO ================= -->
+<div class="toolbar" id="toolbar">
+  <button data-hist="undo" id="btnUndo" title="Deshacer (Ctrl+Z)">↶ Deshacer</button>
+  <button data-hist="redo" id="btnRedo" title="Rehacer (Ctrl+Y o Ctrl+Shift+Z)">↷ Rehacer</button>
+  <span class="sep"></span>
+  <button data-cmd="h1" title="Título 1">H1</button>
+  <button data-cmd="h2" title="Título 2">H2</button>
+  <button data-cmd="h3" title="Título 3">H3</button>
+  <span class="sep"></span>
+  <button data-cmd="bold" title="Negrita (Ctrl+B)"><b>B</b></button>
+  <button data-cmd="italic" title="Cursiva (Ctrl+I)"><i>I</i></button>
+  <button data-cmd="strike" title="Tachado"><s>S</s></button>
+  <button data-cmd="code" title="Código inline">&lt;/&gt;</button>
+  <span class="sep"></span>
+  <button data-cmd="ul" title="Lista con viñetas">• Lista</button>
+  <button data-cmd="ol" title="Lista numerada">1. Numerada</button>
+  <button data-cmd="check" title="Lista de tareas">☑ Tareas</button>
+  <button data-cmd="quote" title="Cita">❝ Cita</button>
+  <span class="sep"></span>
+  <button data-cmd="link" title="Enlace (Ctrl+K)">🔗 Enlace</button>
+  <button data-cmd="image" title="Imagen">🖼 Imagen</button>
+  <button data-cmd="table" id="btnTable" title="Tabla: elige el tamaño como en Word">📊 Tabla ▾</button>
+  <button data-cmd="codeblock" title="Bloque de código">{ } Bloque</button>
+  <button data-cmd="hr" title="Línea horizontal">─ Regla</button>
+</div>
+
+<!-- selector de tamaño de tabla (estilo Word) -->
+<div class="table-pop" id="tablePop" hidden>
+  <div class="pop-title">Insertar tabla — columnas × filas</div>
+  <div class="table-grid" id="tableGrid"></div>
+  <div class="pop-size" id="tableSize">4 × 3</div>
+</div>
+
+<!-- ================= PANTALLA PARTIDA EN DOS ================= -->
+<main class="split">
+
+  <!-- ZONA 1: EDITOR -->
+  <section class="pane editor-pane">
+    <div class="pane-title">✍️ Markdown <span id="stats">0 palabras</span></div>
+    <textarea id="editor" spellcheck="true" placeholder="Escribe tu Markdown aquí..."></textarea>
+  </section>
+
+  <!-- ESQUEMA / ÍNDICE DE TÍTULOS -->
+  <aside class="outline" id="outlinePane">
+    <div class="pane-title">📑 Esquema</div>
+    <nav id="outlineList" class="outline-list">
+      <p class="outline-empty">Añade títulos con <code>#</code> y aparecerán aquí.</p>
+    </nav>
+  </aside>
+
+  <!-- ZONA 2: VISTA EN VIVO -->
+  <section class="pane preview-pane">
+    <div class="pane-title">
+      👀 Vista previa
+      <button id="btnOutline" class="mini" title="Mostrar u ocultar el esquema">☰ Esquema</button>
+    </div>
+    <article id="preview" class="markdown-body"></article>
+  </section>
+
+</main>
+
+<!-- ================= PIE ================= -->
+<footer class="bar bottom">
+  <span id="status">Listo</span>
+  <span id="saveInfo" class="save-info">Sin cambios</span>
+  <span class="hint">Ctrl+N nuevo · Ctrl+O abrir · Ctrl+S guardar · Ctrl+B / Ctrl+I negrita y cursiva · Ctrl+K enlace · Ctrl+Z / Ctrl+Y deshacer y rehacer · Ctrl+V pegar imagen</span>
+  <span class="credito">© 2026 <a href="https://github.com/alberto2005-coder" target="_blank" rel="noopener">Alberto Ortiz</a> · Uso no comercial</span>
+</footer>
+
+<!-- ================= MODAL: MIS DOCUMENTOS ================= -->
+<div class="modal" id="docsModal" role="dialog" aria-modal="true" aria-labelledby="tituloDocs" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2 id="tituloDocs">📚 Mis documentos</h2>
+      <button id="btnCloseDocs" class="mini" title="Cerrar" aria-label="Cerrar la ventana de documentos">✕</button>
+    </div>
+    <div class="modal-actions">
+      <button id="btnNewDoc">＋ Nuevo documento</button>
+      <span class="modal-note">Se guardan automáticamente en este navegador.</span>
+    </div>
+    <div id="docsList" class="docs-list"></div>
+    <p class="modal-note">Usa <strong>💾 Guardar</strong> para descargar también el archivo <code>.md</code> a tu PC.</p>
+  </div>
+</div>
+
+<!-- ================= MODAL: GUÍA DE MARKDOWN ================= -->
+<div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="tituloGuia" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2 id="tituloGuia">❓ Guía rápida de Markdown</h2>
+      <button id="btnCloseHelp" class="mini" title="Cerrar" aria-label="Cerrar la guía">✕</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3>Títulos</h3>
+        <div class="guide-row"><code># Título 1</code><span class="vista vista-h1">Título 1</span></div>
+        <div class="guide-row"><code>## Título 2</code><span class="vista vista-h2">Título 2</span></div>
+        <div class="guide-row"><code>### Título 3</code><span class="vista vista-h3">Título 3</span></div>
+      </div>
+
+      <div class="guide-group">
+        <h3>Énfasis</h3>
+        <div class="guide-row"><code>**negrita**</code><span class="vista"><b>negrita</b></span></div>
+        <div class="guide-row"><code>*cursiva*</code><span class="vista"><i>cursiva</i></span></div>
+        <div class="guide-row"><code>~~tachado~~</code><span class="vista"><s>tachado</s></span></div>
+        <div class="guide-row"><code>`código`</code><span class="vista"><code>código</code></span></div>
+      </div>
+
+      <div class="guide-group">
+        <h3>Listas y citas</h3>
+        <div class="guide-row"><code>- elemento</code><span class="vista">• elemento</span></div>
+        <div class="guide-row"><code>1. paso</code><span class="vista">1. paso</span></div>
+        <div class="guide-row"><code>- [ ] tarea</code><span class="vista"><span class="fake-check">☐</span> tarea</span></div>
+        <div class="guide-row"><code>&gt; cita</code><span class="vista cita">cita</span></div>
+      </div>
+
+      <div class="guide-group">
+        <h3>Enlaces, imágenes y regla</h3>
+        <div class="guide-row"><code>[texto](https://…)</code><span class="vista"><a href="#" onclick="return false">texto</a></span></div>
+        <div class="guide-row"><code>![alt](url)</code><span class="vista">🖼 imagen</span></div>
+        <div class="guide-row"><code>---</code><span class="vista"><hr /></span></div>
+      </div>
+
+      <div class="guide-group">
+        <h3>Tabla</h3>
+        <div class="guide-row"><code>| a | b |<br>|---|---|<br>| 1 | 2 |</code>
+          <span class="vista">
+            <table class="mini-tabla"><tr><th>a</th><th>b</th></tr><tr><td>1</td><td>2</td></tr></table>
+          </span>
+        </div>
+        <p class="guide-nota">O pulsa <strong>📊 Tabla ▾</strong> y elige el tamaño en la rejilla, como en Word.</p>
+      </div>
+
+      <div class="guide-group">
+        <h3>Atajos</h3>
+        <div class="guide-row"><code>Ctrl + S</code><span>Guardar (biblioteca + .md)</span></div>
+        <div class="guide-row"><code>Ctrl + Z</code><span>Deshacer</span></div>
+        <div class="guide-row"><code>Ctrl + Y</code><span>Rehacer (o Ctrl + Shift + Z)</span></div>
+        <div class="guide-row"><code>Ctrl + O</code><span>Abrir archivo</span></div>
+        <div class="guide-row"><code>Ctrl + N</code><span>Documento nuevo</span></div>
+        <div class="guide-row"><code>Ctrl + B</code><span>Negrita</span></div>
+        <div class="guide-row"><code>Ctrl + I</code><span>Cursiva</span></div>
+        <div class="guide-row"><code>Ctrl + K</code><span>Enlace</span></div>
+        <div class="guide-row"><code>Ctrl + V</code><span>Pegar imagen (se inserta sola)</span></div>
+        <div class="guide-row"><code>Esc</code><span>Cerrar ventanas</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.5/dist/purify.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

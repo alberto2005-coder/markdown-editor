@@ -1,0 +1,167 @@
+# 📝 Markdown Editor
+
+[![CI](https://github.com/alberto2005-coder/markdown-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/alberto2005-coder/markdown-editor/actions/workflows/ci.yml)
+
+Editor de Markdown con **pantalla partida en dos**: escribes a la izquierda y ves
+cómo va quedando a la derecha, en tiempo real. Con biblioteca de documentos,
+autoguardado, deshacer/rehacer, exportación a HTML/PDF y compartir por enlace.
+
+**100 % estático** · sin servidor · sin base de datos · listo para GitHub Pages.
+
+---
+
+## ✨ Características
+
+- ✍️ **Vista previa en vivo** mientras escribes
+- 📚 **Mis documentos** — biblioteca en tu navegador: abrir, renombrar, borrar
+- 💾 **Autoguardado** con indicador en el pie (nada de perder trabajo)
+- 🎛 **Barra de formato** — títulos, negrita, listas, tareas, citas, enlaces, tablas…
+- ↶↷ **Deshacer / rehacer** con botones y `Ctrl+Z` / `Ctrl+Y`
+- 📊 **Tabla con rejilla de tamaño** estilo Word (columnas × filas)
+- 📑 **Esquema** de títulos para moverte por documentos largos
+- 📤 **Exportar** — `.md`, página HTML con estilo propio, PDF, copiar
+- 🔗 **Compartir por enlace** — el documento viaja dentro de la URL
+- 🖼 **Pegar capturas** con `Ctrl+V`
+- ❓ **Guía de Markdown** integrada
+- 🌙 Tema claro/oscuro y diseño responsive
+
+---
+
+## 📁 Estructura
+
+```
+markdown-editor/
+├── index.html              ← la página (doble clic para abrir)
+├── README.md               ← este índice
+├── CHANGELOG.md            ← historial de versiones
+├── LICENSE                 ← licencia personalizada (uso no comercial)
+├── .nojekyll               ← para GitHub Pages
+├── .gitignore / .editorconfig
+│
+├── css/style.css           ← diseño y variables de tema
+├── js/app.js               ← toda la lógica
+├── scripts/check.js        ← validador del proyecto (sin dependencias)
+├── .github/workflows/ci.yml ← CI: comprueba todo en cada push
+│
+├── assets/
+│   ├── icon.svg            ← logotipo
+│   └── favicon.svg         ← icono de pestaña
+│
+└── docs/
+    ├── USUARIO.md          ← manual de usuario
+    └── DESARROLLADOR.md    ← guía técnica
+```
+
+---
+
+## 📚 Documentación
+
+| Documento | Para quién | Qué contiene |
+|---|---|---|
+| 📖 **[Manual de usuario](docs/USUARIO.md)** | Quién usa la web | Primeros pasos, cada botón, atajos, ejemplos, casos de uso y preguntas frecuentes |
+| 🛠 **[Guía técnica](docs/DESARROLLADOR.md)** | Quién toca el código | Arquitectura, mapa de `app.js`, modelo de datos, *cómo añadir un botón o una exportación*, checklist y roadmap |
+| 📄 **[Changelog](CHANGELOG.md)** | Todos | Qué ha cambiado en cada versión |
+| ⚖️ **[Licencia](LICENSE)** | Todos | Personalizada de Alberto Ortiz (`alberto2005-coder`): uso libre **no comercial** con atribución |
+
+---
+
+## 🚀 Inicio rápido
+
+**En local:** doble clic en `index.html`.
+
+**Con servidor local:**
+
+```powershell
+cd Downloads\markdown-editor
+py -m http.server 8777
+# abre http://127.0.0.1:8777/
+```
+
+**Atajos esenciales:**
+
+| Tecla | Acción |
+|---|---|
+| `Ctrl + S` | Guardar (biblioteca + descargar `.md`) |
+| `Ctrl + O` / `Ctrl + N` | Abrir / nuevo |
+| `Ctrl + Z` / `Ctrl + Y` | Deshacer / rehacer |
+| `Ctrl + B` / `Ctrl + I` | Negrita / cursiva |
+| `Ctrl + V` | Pegar imagen |
+
+---
+
+## 🌐 Publicar en GitHub Pages
+
+1. Crea un repositorio público en GitHub (ej. `markdown-editor`).
+2. Sube **el contenido** de esta carpeta: `index.html`, `README.md`,
+   `CHANGELOG.md`, `LICENSE`, `.nojekyll`, `css/`, `js/`, `assets/` y `docs/`.
+3. **Settings → Pages → Source: Deploy from a branch** → Branch **`main`** /
+   **`(root)`** → **Save**.
+4. En ~1 minuto: `https://TU-USUARIO.github.io/markdown-editor/`
+
+Con Git, desde la carpeta:
+
+```powershell
+git init
+git add .
+git commit -m "Markdown Editor 1.6.0"
+git branch -M main
+git remote add origin https://github.com/TU-USUARIO/markdown-editor.git
+git push -u origin main
+```
+
+---
+
+## 🧪 Comprobaciones automáticas (CI)
+
+Cada *push* o *pull request* se comprueba solo (GitHub Actions):
+
+1. **Sintaxis** de `js/app.js`
+2. **`scripts/check.js`** → rutas rotas, `id` faltantes o duplicados, botones sin
+   `case`, variables CSS sin definir, metadatos y enlaces de la documentación
+3. **Servido real**: que HTML, CSS, JS e iconos respondan
+4. **Artefacto** descargable con el proyecto
+
+En local, sin instalar nada:
+
+```powershell
+node scripts/check.js
+```
+
+Si sale ❌ el proyecto **no está listo para publicarse**.
+
+---
+
+## 🧰 Tecnologías
+
+- HTML + CSS + JavaScript puros (sin frameworks ni build)
+- [marked](https://marked.js.org/) — Markdown → HTML (CDN)
+- [DOMPurify](https://github.com/cure53/DOMPurify) — saneado del HTML renderizado
+- SVG vectorial para iconos
+
+---
+
+## ❓ Problemas frecuentes
+
+| Problema | Solución |
+|---|---|
+| La vista previa sale en texto plano | Sin internet: `marked` va por CDN. Conexión y se arregla solo |
+| Se perdió la biblioteca | Se guardó en el navegador y se borraron sus datos. Descarga los `.md` de vez en cuando |
+| GitHub Pages no muestra nada | Comprueba que `.nojekyll` está subido y `index.html` en la raíz |
+
+Hay más en el [manual de usuario](docs/USUARIO.md#8-preguntas-frecuentes).
+
+---
+
+## ⚖️ Licencia
+
+Licencia **personalizada, no comercial** de **Alberto Ortiz (`alberto2005-coder`)**:
+
+- ✅ Uso personal, educativo y modificación libres (con atribución)
+- ❌ No se puede usar con fines comerciales sin autorización escrita
+- 🔗 Ver [`LICENSE`](LICENSE) — incluye un resumen de una lectura rápida
+
+Las bibliotecas `marked` y `DOMPurify` mantienen su licencia **MIT** original.
+
+---
+
+Hecho con ❤️ para escribir cómodo y ver el resultado al momento.

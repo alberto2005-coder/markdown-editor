@@ -1,0 +1,15 @@
+# Normaliza finales de línea: siempre LF (importante para la CI y los YAML)
+* text=auto eol=lf
+
+# Binarios
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.zip  binary
+
+# Sin cambios de fin de línea para archivos que deben ser tal cual
+*.md   text eol=lf
+*.svg  text eol=lf
