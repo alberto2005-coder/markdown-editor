@@ -28,12 +28,24 @@
     <button id="btnSave" title="Guardar en Mis documentos y descargar el .md (Ctrl+S)">💾 Guardar</button>
     <button id="btnDocs" title="Documentos guardados en este navegador">📚 Mis docs</button>
     <button id="btnExport" title="Exportar y compartir">📤 Exportar ▾</button>
+    <button id="btnSettings" title="Ajustes de edición: fuente, tamaño y ancho">⚙️ Ajustes</button>
     <button id="btnHelp" title="Guía rápida de Markdown y atajos">❓ Guía</button>
     <button id="btnTheme" title="Cambiar tema" aria-label="Cambiar entre tema claro y oscuro">🌙</button>
   </div>
 
   <input type="file" id="fileInput" accept=".md,.markdown,.mdown,.txt,text/markdown,text/plain" hidden />
+  <input type="file" id="backupInput" accept=".json,application/json" hidden />
 </header>
+
+<!-- menú: plantillas al crear un documento -->
+<div class="menu-pop" id="plantillasPop" hidden>
+  <div class="pop-subtitle">📄 Nueva plantilla</div>
+  <button data-tpl="blanco">📄 Documento en blanco</button>
+  <button data-tpl="apuntes">📝 Apuntes de clase</button>
+  <button data-tpl="readme">📁 README de proyecto</button>
+  <button data-tpl="informe">📊 Informe</button>
+  <button data-tpl="tareas">✅ Lista de tareas</button>
+</div>
 
 <!-- menú: exportar y compartir -->
 <div class="menu-pop" id="exportPop" hidden>
@@ -68,6 +80,25 @@
   <button data-cmd="table" id="btnTable" title="Tabla: elige el tamaño como en Word">📊 Tabla ▾</button>
   <button data-cmd="codeblock" title="Bloque de código">{ } Bloque</button>
   <button data-cmd="hr" title="Línea horizontal">─ Regla</button>
+  <span class="sep"></span>
+  <button id="btnBuscar" title="Buscar y reemplazar (Ctrl+F)">🔍 Buscar</button>
+  <div class="modos" role="group" aria-label="Modo de vista">
+    <button data-modo="editor" title="Solo editor">✍️</button>
+    <button data-modo="split" title="Pantalla dividida (por defecto)">◫</button>
+    <button data-modo="preview" title="Solo vista previa">👀</button>
+  </div>
+</div>
+
+<!-- buscar y reemplazar -->
+<div class="buscar" id="buscarPanel" hidden>
+  <input type="text" id="buscarTxt" placeholder="Buscar…" spellcheck="false" autocomplete="off" />
+  <button id="btnCase" class="mini" title="Distinguir mayúsculas y minúsculas">Aa</button>
+  <span class="buscar-count" id="buscarCount">0/0</span>
+  <input type="text" id="reemplazarTxt" placeholder="Reemplazar por…" spellcheck="false" autocomplete="off" />
+  <button id="btnNext" class="mini" title="Siguiente coincidencia (Enter)">Siguiente ↓</button>
+  <button id="btnReplace" class="mini" title="Reemplazar la coincidencia actual">Reemplazar</button>
+  <button id="btnReplaceAll" class="mini" title="Reemplazar todas">Todo</button>
+  <button id="btnCloseBuscar" class="mini" aria-label="Cerrar la búsqueda">✕</button>
 </div>
 
 <!-- selector de tamaño de tabla (estilo Word) -->
@@ -122,11 +153,72 @@
     </div>
     <div class="modal-actions">
       <button id="btnNewDoc">＋ Nuevo documento</button>
+      <button id="btnBackup" title="Descargar todos los documentos en un solo archivo">⬇️ Respaldo</button>
+      <button id="btnRestore" title="Cargar un respaldo .json">⬆️ Restaurar</button>
       <span class="modal-note">Se guardan automáticamente en este navegador.</span>
     </div>
     <div id="docsList" class="docs-list"></div>
     <p class="modal-note">Usa <strong>💾 Guardar</strong> para descargar también el archivo <code>.md</code> a tu PC.</p>
   </div>
+</div>
+
+<!-- ================= MODAL: AJUSTES ================= -->
+<div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="tituloAjustes" hidden>
+  <div class="modal-card modal-ajustes">
+    <div class="modal-head">
+      <h2 id="tituloAjustes">⚙️ Ajustes de edición</h2>
+      <button id="btnCloseSettings" class="mini" title="Cerrar" aria-label="Cerrar los ajustes">✕</button>
+    </div>
+    <div class="ajustes-body">
+
+      <label class="ajuste">
+        <span>Fuente del editor</span>
+        <select id="ajFuente">
+          <option value="mono">Monoespaciada (código)</option>
+          <option value="sans">Sans serif (normal)</option>
+          <option value="serif">Serif (clásica)</option>
+        </select>
+      </label>
+
+      <label class="ajuste">
+        <span>Tamaño del editor <b id="valEd">14,5 px</b></span>
+        <input type="range" id="ajEdSize" min="12" max="22" step="0.5" />
+      </label>
+
+      <label class="ajuste">
+        <span>Tamaño de la vista previa <b id="valPv">15,5 px</b></span>
+        <input type="range" id="ajPvSize" min="13" max="24" step="0.5" />
+      </label>
+
+      <label class="ajuste">
+        <span>Ancho de lectura</span>
+        <select id="ajAncho">
+          <option value="620px">Estrecho (lectura cómoda)</option>
+          <option value="780px">Normal</option>
+          <option value="none">Ancho completo</option>
+        </select>
+      </label>
+
+      <label class="ajuste">
+        <span>Tema</span>
+        <select id="ajTema">
+          <option value="light">Claro</option>
+          <option value="dark">Oscuro</option>
+        </select>
+      </label>
+
+      <div class="ajuste-botones">
+        <button id="btnResetAjustes">↺ Restablecer valores</button>
+        <span class="modal-note">Se guardan en este navegador.</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= ZONA DE SOLTAR ARCHIVOS ================= -->
+<div class="drop-zone" id="dropZone" hidden>
+  <div class="drop-card">📂 Suelta aquí tu archivo <b>.md</b> o una imagen</div>
 </div>
 
 <!-- ================= MODAL: GUÍA DE MARKDOWN ================= -->
@@ -151,6 +243,15 @@
         <div class="guide-row"><code>*cursiva*</code><span class="vista"><i>cursiva</i></span></div>
         <div class="guide-row"><code>~~tachado~~</code><span class="vista"><s>tachado</s></span></div>
         <div class="guide-row"><code>`código`</code><span class="vista"><code>código</code></span></div>
+      </div>
+
+      <div class="guide-group">
+        <h3>Código</h3>
+        <div class="guide-row"><code>&nbsp;&nbsp;&nbsp;&nbsp;código</code><span class="vista">sangría de 4 espacios</span></div>
+        <div class="guide-row"><code>```js<br>código<br>```</code>
+          <span class="vista"><code>var x = 1;</code></span>
+        </div>
+        <p class="guide-nota">Para bloques largos usa <strong>{ } Bloque</strong> en la barra de formato.</p>
       </div>
 
       <div class="guide-group">
@@ -183,13 +284,30 @@
         <div class="guide-row"><code>Ctrl + S</code><span>Guardar (biblioteca + .md)</span></div>
         <div class="guide-row"><code>Ctrl + Z</code><span>Deshacer</span></div>
         <div class="guide-row"><code>Ctrl + Y</code><span>Rehacer (o Ctrl + Shift + Z)</span></div>
+        <div class="guide-row"><code>Ctrl + F</code><span>Buscar y reemplazar</span></div>
         <div class="guide-row"><code>Ctrl + O</code><span>Abrir archivo</span></div>
-        <div class="guide-row"><code>Ctrl + N</code><span>Documento nuevo</span></div>
+        <div class="guide-row"><code>Ctrl + N</code><span>Documento nuevo en blanco</span></div>
         <div class="guide-row"><code>Ctrl + B</code><span>Negrita</span></div>
         <div class="guide-row"><code>Ctrl + I</code><span>Cursiva</span></div>
         <div class="guide-row"><code>Ctrl + K</code><span>Enlace</span></div>
         <div class="guide-row"><code>Ctrl + V</code><span>Pegar imagen (se inserta sola)</span></div>
-        <div class="guide-row"><code>Esc</code><span>Cerrar ventanas</span></div>
+        <div class="guide-row"><code>Ctrl + P</code><span>Imprimir / guardar como PDF</span></div>
+        <div class="guide-row"><code>Tab</code><span>Sangría de 2 espacios</span></div>
+        <div class="guide-row"><code>Enter</code><span>En la búsqueda: siguiente coincidencia</span></div>
+        <div class="guide-row"><code>Esc</code><span>Cerrar ventanas, menús o la búsqueda</span></div>
+      </div>
+
+      <div class="guide-group">
+        <h3>Todo lo demás que puedes hacer</h3>
+        <div class="guide-row"><code>🔍 Buscar</code><span>Barra con contador <b>n/total</b>, <b>Aa</b> (mayúsculas), <b>Siguiente</b>, <b>Reemplazar</b> y <b>Todo</b></span></div>
+        <div class="guide-row"><code>✍️ ◫ 👀</code><span>Modos de vista: solo editor, dividido o solo vista previa</span></div>
+        <div class="guide-row"><code>＋ Nuevo</code><span>Menú de plantillas: apuntes, README, informe, tareas o en blanco</span></div>
+        <div class="guide-row"><code>⚙️ Ajustes</code><span>Fuente, tamaño del editor y de la vista previa, ancho de lectura y tema</span></div>
+        <div class="guide-row"><code>⬇️ Respaldo</code><span>En <b>📚 Mis docs</b>: baja todo en un <b>.json</b> y lo restauras donde quieras</span></div>
+        <div class="guide-row"><code>📂 Arrastrar</code><span>Suelta un <b>.md</b> para abrirlo, o una imagen para insertarla</span></div>
+        <div class="guide-row"><code>📤 Exportar</code><span><b>.md</b>, página HTML con estilo, PDF e <b>enlace para compartir</b></span></div>
+        <div class="guide-row"><code>💾 Autoguardado</code><span>Se guarda solo a los 1,2 s; el pie indica el estado</span></div>
+        <p class="guide-nota">La biblioteca vive en <strong>este navegador</strong>: haz un respaldo de vez en cuando.</p>
       </div>
 
     </div>

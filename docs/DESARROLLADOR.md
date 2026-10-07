@@ -32,7 +32,7 @@ markdown-editor/
 ├── .gitignore          Qué no subir a Git
 ├── .editorconfig       Estilo de edición uniforme
 ├── css/style.css       Estilos + variables de tema + print
-├── js/app.js           Toda la lógica (≈1000 líneas, 12 secciones)
+├── js/app.js           Toda la lógica (≈1430 líneas, 11 secciones)
 ├── scripts/check.js    Validador sin dependencias (lo usa el CI)
 ├── .github/workflows/ci.yml  CI: sintaxis, rutas, ids y servido
 ├── assets/icon.svg     Logo (cabecera, og:image, apple-touch-icon)
@@ -53,19 +53,25 @@ Busca `/* ======` o el número de sección.
 |---|---|---|
 | **1. Biblioteca** | CRUD de documentos en `localStorage` | `cargarDocs()`, `escribirDocs()`, `persistir(silencioso)`, `docActual()` |
 | **2. Modal Mis docs** | Pinta la lista y sus acciones | `pintaListaDocs()`, `abrirDoc()`, `renombrarDoc()`, `borrarDoc()` |
-| **3. Acciones de archivo** | Nuevo / abrir / descargar | `nuevo()`, `abrirDisco()`, `descargar()`, `descargarComo()`, `guardar()`, `copiar()` |
+| **3. Acciones de archivo** | Nuevo / abrir / descargar | `nuevo()`, `abrirDisco()`, `abrirArchivoDisco(file)`, `descargar()`, `descargarComo()`, `guardar()`, `copiar()` |
 | **4. Autoguardado** | 1,2 s de rebote + indicador del pie | `marcarSucio()`, `persistir`, `actualizarSaveInfo()`, `tiempoDesde()`, `beforeunload` |
 | **4b. Historial** | Deshacer/rehacer propios | `notaCambio()`, `deshacer()`, `rehacer()`, `restaura()`, `reiniciarHistorial()` |
 | **5. Barra de formato** | Comandos de sintaxis | `envolver()`, `prefijo()`, `prefijoConEjemplo()`, `comando(cmd)`, `PLANTILLA` |
 | **5b. Tabla** | Rejilla tipo Word (8×6) | `construirGrid()`, `pintaGrid()`, `insertarTabla(cols, filas)`, `posicionaPop()` |
 | **5c. Exportar** | HTML, PDF, MD, compartir | `exportarHTML()`, `CSS_EXPORT`, `aB64()`, `desdeB64()`, `compartir()`, `cargarDesdeEnlace()` |
-| **5d. Pegar imágenes** | `Ctrl+V` → base64 | listener `editor.addEventListener('paste', …)` |
+| **5d. Pegar imágenes** | `Ctrl+V` → base64 | `pegarImagen(file)`, listener `editor.addEventListener('paste', …)` |
 | **5e. Menús** | Menú Exportar y ventana Guía | `exportPop`, `helpModal`, `cierraExportPop()`, `cierraAyuda()` |
 | **6. Esquema** | Índice de títulos | `construirEsquema()`, `saltarA(i)`, `marcaActivo(i)` |
 | **7. Render** | Markdown → HTML | `render()`, `trasCambiar()` |
-| **8. Atajos** | `keydown` global y del editor | `Ctrl+Z/Y/S/O/N/B/I/K`, `Tab`, `Esc` |
+| **8. Atajos** | `keydown` global y del editor | `Ctrl+Z/Y/S/O/N/B/I/K/F`, `Tab`, `Esc` |
 | **9. Tema y botones** | Suscripciones de la UI | `aplicarTema()`, listeners de cada `btn*` |
-| **10. Inicio** | `iniciar()` (IIFE) | Restaura tema, biblioteca, esquema y contenido |
+| **10a. Modos de vista** | Solo editor / dividido / solo preview | `aplicarModo(m)`, clase `split modo-*`, `md-editor:modo` |
+| **10b. Buscar y reemplazar** | Barra con contador y reemplazo | `posicionesBusqueda()`, `resaltaDesde()`, `siguienteCoincidencia()`, `reemplazaUno()`, `reemplazaTodo()` |
+| **10c. Ajustes** | Fuente, tamaños, ancho y tema | `aplicarAjustes()` (variables CSS), `cambiaAjuste()`, `AJUSTES_DEFECTO`, `md-editor:ajustes` |
+| **10d. Plantillas** | Crear desde plantilla | `PLANTILLAS`, `plantillasPop`, `crearDesdePlantilla(clave)` |
+| **10e. Respaldo** | Exportar/importar la biblioteca | `respaldoBiblioteca()`, `restaurarRespaldo(file)`, `#backupInput` |
+| **10f. Arrastrar** | Soltar `.md` o imagen | `traeArchivos(e)`, listeners `dragenter/over/leave/drop`, `#dropZone` |
+| **11. Inicio** | `iniciar()` (IIFE) | Restaura tema, ajustes, modo, biblioteca, esquema y contenido |
 
 ### Flujo de un cambio de texto
 
@@ -100,6 +106,8 @@ escribir en `localStorage` en cada pulsación.
 | `md-editor:docId` | `id` del documento abierto (`''` si ninguno) |
 | `md-editor:tema` | `'light'` \| `'dark'` |
 | `md-editor:esquema` | `'1'` \| `'0'` — esquema visible |
+| `md-editor:modo` | `'editor'` \| `'split'` \| `'preview'` — modo de vista |
+| `md-editor:ajustes` | `{ fuente, edSize, pvSize, ancho }` — panel ⚙️ (JSON) |
 | `md-editor:contenido` / `md-editor:nombre` | Legacy (se siguen leyendo si no hay biblioteca) |
 
 > **Cuota:** `localStorage` ronda los 5 MB por origen. Un documento con imágenes
@@ -159,10 +167,17 @@ En `css/style.css`, arriba del todo:
 
 ```css
 :root        { --bg, --panel, --border, --text, --muted, --accent, --accent-soft, --shadow }
+             { --editor-font, --editor-size, --preview-size, --preview-max }
 [data-theme="dark"] { /* mismas variables en oscuro */ }
 ```
 
 Todo lo demás (botones, esquema, modales, impresión) coge esas variables.
+
+Las cuatro últimas son las que mueve **⚙️ Ajustes** con
+`document.documentElement.style.setProperty(...)`; sus valores por defecto
+están en `:root` (funcionan sin JS) y los del usuario en `md-editor:ajustes`.
+Para añadir un ajuste nuevo: variable en `:root`, control en `#settingsModal`,
+y una línea en `aplicarAjustes()` (sección 10c).
 
 ### 5.5 Añadir una zona de contenido nuevo al HTML
 
@@ -203,6 +218,21 @@ Se reconstruye en cada `render()` leyendo el Markdown (ignorando lo que haya
 dentro de bloques ` ``` `). Los títulos del preview reciben `id="sec-N"` para
 poder hacer scroll hasta ellos y resaltar el activo en el scroll.
 
+### Buscar y reemplazar
+No se resaltan coincidencias con `innerHTML` (rompería la edición): lo que se
+hace es **seleccionar** la coincidencia dentro del `textarea` con
+`setSelectionRange()`. `posicionesBusqueda()` devuelve todas las posiciones con
+un `indexOf` en bucle, reutilizando la lógica de mayúsculas (`sensibleMayus`).
+Ese mismo array da el contador `n/total` y el «dar la vuelta» al final.
+
+### Modos, ajustes y plantillas
+- `aplicarModo(m)` solo cambia la clase del `<main class="split">`
+  (`split modo-editor|split|preview`); el CSS se encarga del resto.
+- `aplicarAjustes()` escribe variables CSS en `:root` en línea: sin tocar el
+  fichero CSS ni recargar.
+- `crearDesdePlantilla()` hace lo mismo que `nuevo()` pero con contenido, y
+  llama a `persistir(true)` para que la plantilla aparezca ya en la biblioteca.
+
 ---
 
 ## 7. Seguridad
@@ -235,6 +265,12 @@ poder hacer scroll hasta ellos y resaltar el activo en el scroll.
 [ ] Pegar una imagen pequeña (Ctrl+V)
 [ ] Compartir enlace → abrirlo en una pestaña de incógnito
 [ ] Tema oscuro y claro
+[ ] Ctrl+F → buscar, siguiente, reemplazar y reemplazar todo
+[ ] Modos ✍️ ◫ 👀 → cada uno deja solo sus paneles
+[ ] ⚙️ Ajustes → cambiar fuente/tamaño/ancho y recargar (se recuerdan)
+[ ] ＋ Nuevo → plantillas (README, tareas…) crean documento en la biblioteca
+[ ] 📚 Mis docs → ⬇️ Respaldo → ⬆️ Restaurar en limpio
+[ ] Arrastrar un .md a la ventana → se abre
 [ ] Ventana estrecha (< 760 px): las columnas se apilan
 [ ] Ctrl+P: el PDF sale sin barra ni editor
 ```
@@ -281,11 +317,11 @@ usando `ok()` / `mal()` / `aviso()` y ya se ejecuta solo en cada push.
 
 ## 11. Ideas para el futuro
 
-- Buscar y reemplazar (`Ctrl+F`).
 - Exportar todos los documentos de la biblioteca a un `.zip`.
 - Sincronización opcional (GitHub Gist, WebDAV) para no depender del navegador.
 - Resaltado de sintaxis dentro del editor (overlay).
-- Editor en modo «typewriter» y ancho de línea ajustable.
+- Historial de versiones por documento (varios guardados, volver atrás días después).
+- PWA instalable y offline (manifest + service worker + iconos PNG).
 - Pruebas automáticas con Playwright sobre el checklist del apartado 9.
 
 ---

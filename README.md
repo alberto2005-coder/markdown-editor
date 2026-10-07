@@ -13,15 +13,20 @@ autoguardado, deshacer/rehacer, exportación a HTML/PDF y compartir por enlace.
 ## ✨ Características
 
 - ✍️ **Vista previa en vivo** mientras escribes
+- 🔍 **Buscar y reemplazar** (`Ctrl+F`) con contador de coincidencias
+- 🗂 **Modos de vista**: solo editor, pantalla dividida o solo vista previa
+- ⚙️ **Ajustes de edición**: fuente, tamaño del texto y ancho de lectura
+- 📄 **Plantillas** al crear: apuntes, README, informe o lista de tareas
 - 📚 **Mis documentos** — biblioteca en tu navegador: abrir, renombrar, borrar
 - 💾 **Autoguardado** con indicador en el pie (nada de perder trabajo)
+- 🧳 **Respaldo** de toda la biblioteca a un `.json` y restauración
 - 🎛 **Barra de formato** — títulos, negrita, listas, tareas, citas, enlaces, tablas…
 - ↶↷ **Deshacer / rehacer** con botones y `Ctrl+Z` / `Ctrl+Y`
 - 📊 **Tabla con rejilla de tamaño** estilo Word (columnas × filas)
 - 📑 **Esquema** de títulos para moverte por documentos largos
 - 📤 **Exportar** — `.md`, página HTML con estilo propio, PDF, copiar
 - 🔗 **Compartir por enlace** — el documento viaja dentro de la URL
-- 🖼 **Pegar capturas** con `Ctrl+V`
+- 🖼 **Pegar capturas** con `Ctrl+V`, o **arrastra y suelta** un `.md` o una imagen
 - ❓ **Guía de Markdown** integrada
 - 🌙 Tema claro/oscuro y diseño responsive
 
@@ -84,6 +89,7 @@ py -m http.server 8777
 | `Ctrl + S` | Guardar (biblioteca + descargar `.md`) |
 | `Ctrl + O` / `Ctrl + N` | Abrir / nuevo |
 | `Ctrl + Z` / `Ctrl + Y` | Deshacer / rehacer |
+| `Ctrl + F` | Buscar y reemplazar |
 | `Ctrl + B` / `Ctrl + I` | Negrita / cursiva |
 | `Ctrl + V` | Pegar imagen |
 
@@ -103,7 +109,7 @@ Con Git, desde la carpeta:
 ```powershell
 git init
 git add .
-git commit -m "Markdown Editor 1.6.0"
+git commit -m "Markdown Editor 1.7.0"
 git branch -M main
 git remote add origin https://github.com/TU-USUARIO/markdown-editor.git
 git push -u origin main
@@ -145,7 +151,7 @@ Si sale ❌ el proyecto **no está listo para publicarse**.
 | Problema | Solución |
 |---|---|
 | La vista previa sale en texto plano | Sin internet: `marked` va por CDN. Conexión y se arregla solo |
-| Se perdió la biblioteca | Se guardó en el navegador y se borraron sus datos. Descarga los `.md` de vez en cuando |
+| Se perdió la biblioteca | Vive en el navegador: haz **📚 Mis docs → ⬇️ Respaldo** de vez en cuando y **⬆️ Restaurar** en el equipo nuevo |
 | GitHub Pages no muestra nada | Comprueba que `.nojekyll` está subido y `index.html` en la raíz |
 
 Hay más en el [manual de usuario](docs/USUARIO.md#8-preguntas-frecuentes).

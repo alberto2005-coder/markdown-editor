@@ -270,9 +270,13 @@ function copiar() {
     .catch(() => setMensaje('No se pudo copiar'));
 }
 
-document.getElementById('fileInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
+/** Carga un archivo de texto (.md/.txt) desde el disco y lo abre. */
+function abrirArchivoDisco(file) {
   if (!file) return;
+  if (!/\.(md|markdown|mdown|txt)$/i.test(file.name) && !/^text\//.test(file.type)) {
+    setMensaje('⚠ Tipo no admitido: ' + file.name + ' (usa .md o .txt)');
+    return;
+  }
   const lector = new FileReader();
   lector.onload = () => {
     if (editor.value.trim()) persistir(true);
@@ -285,6 +289,10 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
     setMensaje(`📂 Abierto: ${file.name}`);
   };
   lector.readAsText(file, 'utf-8');
+}
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  abrirArchivoDisco(e.target.files[0]);
   e.target.value = '';
 });
 
@@ -592,6 +600,9 @@ document.addEventListener('click', (e) => {
   if (!exportPop.hidden && !exportPop.contains(e.target) && !btnExport.contains(e.target)) {
     cierraExportPop();
   }
+  if (!plantillasPop.hidden && !plantillasPop.contains(e.target) && !btnNew.contains(e.target)) {
+    cierraPlantillas();
+  }
 });
 
 construirGrid();
@@ -697,26 +708,30 @@ function cargarDesdeEnlace() {
    5d. PEGAR IMÁGENES (Ctrl+V)
    ========================================================= */
 
+/** Inserta una imagen en base64 donde está el cursor. */
+function pegarImagen(file) {
+  if (!file) return;
+  if (file.size > 1500000) {
+    setMensaje('⚠ Imagen demasiado grande para insertar (máx. 1,5 MB)');
+    return;
+  }
+  const lector = new FileReader();
+  lector.onload = () => {
+    const md = `![imagen pegada](${lector.result})`;
+    editor.setRangeText(md, editor.selectionStart, editor.selectionEnd, 'end');
+    trasCambiar();
+    const pesa = Math.round(lector.result.length / 1024);
+    setMensaje(`🖼 Imagen insertada en el Markdown (${pesa} KB en base64)`);
+  };
+  lector.readAsDataURL(file);
+}
+
 editor.addEventListener('paste', (e) => {
   const items = (e.clipboardData && e.clipboardData.items) || [];
   for (const it of items) {
     if (it.type && it.type.indexOf('image/') === 0) {
       e.preventDefault();
-      const file = it.getAsFile();
-      if (!file) return;
-      if (file.size > 1500000) {
-        setMensaje('⚠ Imagen demasiado grande para pegar (máx. 1,5 MB)');
-        return;
-      }
-      const lector = new FileReader();
-      lector.onload = () => {
-        const md = `![imagen pegada](${lector.result})`;
-        editor.setRangeText(md, editor.selectionStart, editor.selectionEnd, 'end');
-        trasCambiar();
-        const pesa = Math.round(lector.result.length / 1024);
-        setMensaje(`🖼 Imagen insertada en el Markdown (${pesa} KB en base64)`);
-      };
-      lector.readAsDataURL(file);
+      pegarImagen(it.getAsFile());
       return;
     }
   }
@@ -879,8 +894,11 @@ function setMensaje(txt) { statusEl.textContent = txt; }
 document.addEventListener('keydown', (e) => {
   const ctrl = e.ctrlKey || e.metaKey;
   if (e.key === 'Escape') {
+    if (!buscarPanel.hidden) { cierraBuscar(); return; }
     if (!tablePop.hidden) { cierraTablaPop(); return; }
     if (!exportPop.hidden) { cierraExportPop(); return; }
+    if (!plantillasPop.hidden) { cierraPlantillas(); return; }
+    if (!settingsModal.hidden) { cierraAjustes(); return; }
     if (!helpModal.hidden) { cierraAyuda(); return; }
     if (!docsModal.hidden) { cierraDocs(); return; }
   }
@@ -895,6 +913,18 @@ document.addEventListener('keydown', (e) => {
   else if (k === 'b')            { e.preventDefault(); comando('bold'); }
   else if (k === 'i')            { e.preventDefault(); comando('italic'); }
   else if (k === 'k')            { e.preventDefault(); comando('link'); }
+  else if (k === 'f') {
+    e.preventDefault();
+    if (buscarPanel.hidden) {
+      buscarPanel.hidden = false;
+      buscarTxt.focus();
+      buscarTxt.select();
+      resaltaDesde(0);
+    } else {
+      buscarTxt.focus();
+      buscarTxt.select();
+    }
+  }
 });
 
 editor.addEventListener('keydown', (e) => {
@@ -912,6 +942,8 @@ editor.addEventListener('keydown', (e) => {
 function aplicarTema(tema) {
   document.documentElement.setAttribute('data-theme', tema);
   document.getElementById('btnTheme').textContent = tema === 'dark' ? '☀️' : '🌙';
+  const selTema = document.getElementById('ajTema');
+  if (selTema) selTema.value = tema;   // sincroniza el panel de ajustes
   try { localStorage.setItem(THEME_KEY, tema); } catch (e) {}
 }
 
@@ -920,7 +952,10 @@ document.getElementById('btnTheme').addEventListener('click', () => {
   aplicarTema(actual === 'dark' ? 'light' : 'dark');
 });
 
-document.getElementById('btnNew').addEventListener('click', nuevo);
+document.getElementById('btnNew').addEventListener('click', () => {
+  // abre el menú de plantillas (gestionado en la sección 10d)
+  plantillasPop.hidden ? posicionaPop(plantillasPop, btnNew) : cierraPlantillas();
+});
 document.getElementById('btnOpen').addEventListener('click', abrirDisco);
 document.getElementById('btnSave').addEventListener('click', guardar);
 document.getElementById('btnDocs').addEventListener('click', abreDocs);
@@ -938,7 +973,405 @@ editor.addEventListener('input', trasCambiar);
 fileNameIn.addEventListener('input', marcarSucio);
 
 /* =========================================================
-   10. INICIO
+   10. EXTRAS: MODOS, BÚSQUEDA, AJUSTES, PLANTILLAS,
+       RESPALDO Y ARRASTRAR ARCHIVOS
+   ========================================================= */
+
+/* ---------- 10a. Modos de vista ---------- */
+const splitPane = document.querySelector('.split');
+
+function aplicarModo(m) {
+  if (['editor', 'split', 'preview'].indexOf(m) === -1) m = 'split';
+  splitPane.className = 'split modo-' + m;
+  document.querySelectorAll('.modos button').forEach(b =>
+    b.classList.toggle('on', b.dataset.modo === m));
+  try { localStorage.setItem('md-editor:modo', m); } catch (e) {}
+}
+
+document.querySelectorAll('.modos button').forEach(b =>
+  b.addEventListener('click', () => aplicarModo(b.dataset.modo)));
+
+/* ---------- 10b. Buscar y reemplazar ---------- */
+const buscarPanel   = document.getElementById('buscarPanel');
+const buscarTxt     = document.getElementById('buscarTxt');
+const reemplazarTxt = document.getElementById('reemplazarTxt');
+const buscarCount   = document.getElementById('buscarCount');
+let sensibleMayus = false;
+
+function cierraBuscar() { buscarPanel.hidden = true; }
+
+function posicionesBusqueda() {
+  const q = buscarTxt.value;
+  if (!q) return [];
+  const texto = editor.value;
+  const hay = sensibleMayus ? texto : texto.toLowerCase();
+  const p   = sensibleMayus ? q    : q.toLowerCase();
+  const res = [];
+  let i = hay.indexOf(p);
+  while (i !== -1) { res.push(i); i = hay.indexOf(p, i + Math.max(1, p.length)); }
+  return res;
+}
+
+/** Selecciona la coincidencia a partir de `desde` y actualiza el contador. */
+function resaltaDesde(desde) {
+  const q = buscarTxt.value;
+  const pos = posicionesBusqueda();
+  if (!q || !pos.length) { buscarCount.textContent = '0/0'; return -1; }
+  let i = pos.findIndex(p => p >= desde);
+  if (i === -1) i = 0;
+  const ini = pos[i];
+  editor.setSelectionRange(ini, ini + q.length);
+  buscarCount.textContent = (i + 1) + '/' + pos.length;
+  return ini;
+}
+
+function siguienteCoincidencia() {
+  const pos = posicionesBusqueda();
+  if (!pos.length) return;
+  let i = pos.findIndex(p => p >= editor.selectionEnd);
+  if (i === -1) i = 0;
+  const ini = pos[i];
+  editor.setSelectionRange(ini, ini + buscarTxt.value.length);
+  buscarCount.textContent = (i + 1) + '/' + pos.length;
+}
+
+function reemplazaUno() {
+  const q = buscarTxt.value;
+  if (!q) return;
+  const sel = editor.value.slice(editor.selectionStart, editor.selectionEnd);
+  const coincide = sensibleMayus ? sel === q : sel.toLowerCase() === q.toLowerCase();
+  if (!coincide) { resaltaDesde(editor.selectionStart); return; }
+  const corte = editor.selectionStart;
+  editor.setRangeText(reemplazarTxt.value, editor.selectionStart, editor.selectionEnd, 'end');
+  trasCambiar();
+  resaltaDesde(corte + reemplazarTxt.value.length);
+}
+
+function reemplazaTodo() {
+  const q = buscarTxt.value;
+  if (!q) return;
+  const antes = posicionesBusqueda().length;
+  if (sensibleMayus) {
+    editor.value = editor.value.split(q).join(reemplazarTxt.value);
+  } else {
+    const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    editor.value = editor.value.replace(new RegExp(esc, 'gi'), reemplazarTxt.value);
+  }
+  editor.setSelectionRange(0, 0);
+  trasCambiar();
+  buscarCount.textContent = '0/0';
+  setMensaje(`🔍 ${antes} coincidencia(s) reemplazada(s)`);
+}
+
+buscarTxt.addEventListener('input', () => resaltaDesde(0));
+buscarTxt.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); siguienteCoincidencia(); }
+});
+reemplazarTxt.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); reemplazaUno(); }
+});
+document.getElementById('btnNext').addEventListener('click', siguienteCoincidencia);
+document.getElementById('btnReplace').addEventListener('click', reemplazaUno);
+document.getElementById('btnReplaceAll').addEventListener('click', reemplazaTodo);
+document.getElementById('btnCloseBuscar').addEventListener('click', cierraBuscar);
+document.getElementById('btnCase').addEventListener('click', (e) => {
+  sensibleMayus = !sensibleMayus;
+  e.currentTarget.classList.toggle('on', sensibleMayus);
+  resaltaDesde(0);
+});
+document.getElementById('btnBuscar').addEventListener('click', () => {
+  if (buscarPanel.hidden) {
+    buscarPanel.hidden = false;
+    buscarTxt.focus();
+    buscarTxt.select();
+    resaltaDesde(0);
+  } else {
+    cierraBuscar();
+  }
+});
+
+/* ---------- 10c. Ajustes de edición ---------- */
+const AJUSTES_DEFECTO = { fuente: 'mono', edSize: 14.5, pvSize: 15.5, ancho: '780px' };
+const FUENTES = {
+  mono:  '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+  sans:  'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
+  serif: 'Georgia, "Times New Roman", Times, serif'
+};
+const settingsModal = document.getElementById('settingsModal');
+let ajustes = cargarAjustes();
+
+function cargarAjustes() {
+  try {
+    return Object.assign({}, AJUSTES_DEFECTO,
+      JSON.parse(localStorage.getItem('md-editor:ajustes') || '{}'));
+  } catch (e) { return Object.assign({}, AJUSTES_DEFECTO); }
+}
+
+function guardarAjustes() {
+  try { localStorage.setItem('md-editor:ajustes', JSON.stringify(ajustes)); } catch (e) {}
+}
+
+function aplicarAjustes() {
+  const r = document.documentElement;
+  r.style.setProperty('--editor-font', FUENTES[ajustes.fuente] || FUENTES.mono);
+  r.style.setProperty('--editor-size', ajustes.edSize + 'px');
+  r.style.setProperty('--preview-size', ajustes.pvSize + 'px');
+  r.style.setProperty('--preview-max', ajustes.ancho);
+
+  document.getElementById('ajFuente').value = ajustes.fuente;
+  document.getElementById('ajEdSize').value = ajustes.edSize;
+  document.getElementById('ajPvSize').value = ajustes.pvSize;
+  document.getElementById('ajAncho').value  = ajustes.ancho;
+  document.getElementById('valEd').textContent = String(ajustes.edSize).replace('.', ',') + ' px';
+  document.getElementById('valPv').textContent = String(ajustes.pvSize).replace('.', ',') + ' px';
+}
+
+function cambiaAjuste(campo, valor) {
+  ajustes[campo] = valor;
+  guardarAjustes();
+  aplicarAjustes();
+}
+
+document.getElementById('ajFuente').addEventListener('change', e => cambiaAjuste('fuente', e.target.value));
+document.getElementById('ajEdSize').addEventListener('input',  e => cambiaAjuste('edSize', Number(e.target.value)));
+document.getElementById('ajPvSize').addEventListener('input',  e => cambiaAjuste('pvSize', Number(e.target.value)));
+document.getElementById('ajAncho').addEventListener('change',   e => cambiaAjuste('ancho',  e.target.value));
+document.getElementById('ajTema').addEventListener('change',    e => aplicarTema(e.target.value));
+
+document.getElementById('btnResetAjustes').addEventListener('click', () => {
+  ajustes = Object.assign({}, AJUSTES_DEFECTO);
+  guardarAjustes();
+  aplicarAjustes();
+  setMensaje('⚙️ Ajustes restablecidos');
+});
+
+function cierraAjustes() { settingsModal.hidden = true; }
+
+document.getElementById('btnSettings').addEventListener('click', () => {
+  document.getElementById('ajTema').value =
+    document.documentElement.getAttribute('data-theme') || 'light';
+  aplicarAjustes();
+  settingsModal.hidden = false;
+});
+document.getElementById('btnCloseSettings').addEventListener('click', cierraAjustes);
+settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) cierraAjustes(); });
+
+/* ---------- 10d. Plantillas ---------- */
+const PLANTILLAS = {
+  blanco: { nombre: 'documento', contenido: '' },
+
+  apuntes: {
+    nombre: 'apuntes',
+    contenido: [
+      '# Apuntes — [Asignatura]',
+      '',
+      '**Fecha:** ' + new Date().toLocaleDateString('es-ES'),
+      '**Tema:** ',
+      '',
+      '## Resumen',
+      '',
+      '',
+      '## Conceptos clave',
+      '',
+      '- ',
+      '',
+      '## Dudas para preguntar',
+      '',
+      '- [ ] ',
+      '',
+      '---',
+      '',
+      '_Apuntes de Alberto Ortiz_'
+    ].join('\n')
+  },
+
+  readme: {
+    nombre: 'README',
+    contenido: [
+      '# Nombre del proyecto',
+      '',
+      '> Descripción corta de una línea.',
+      '',
+      '## Características',
+      '',
+      '- ',
+      '',
+      '## Instalación',
+      '',
+      '```bash',
+      'git clone https://github.com/usuario/proyecto.git',
+      '```',
+      '',
+      '## Uso',
+      '',
+      '```python',
+      'import proyecto',
+      '```',
+      '',
+      '## Licencia',
+      '',
+      'Consulta el archivo `LICENSE`.'
+    ].join('\n')
+  },
+
+  informe: {
+    nombre: 'informe',
+    contenido: [
+      '# Informe — [Título]',
+      '',
+      '**Autor:** Alberto Ortiz',
+      '**Fecha:** ' + new Date().toLocaleDateString('es-ES'),
+      '',
+      '## 1. Resumen',
+      '',
+      '',
+      '## 2. Objetivos',
+      '',
+      '1. ',
+      '',
+      '## 3. Desarrollo',
+      '',
+      '',
+      '## 4. Conclusiones',
+      '',
+      '',
+      '## 5. Fuentes',
+      '',
+      '1. '
+    ].join('\n')
+  },
+
+  tareas: {
+    nombre: 'tareas',
+    contenido: [
+      '# Tareas — [Proyecto]',
+      '',
+      '## Hoy',
+      '',
+      '- [ ] ',
+      '- [ ] ',
+      '- [ ] ',
+      '',
+      '## Esta semana',
+      '',
+      '- [ ] ',
+      '',
+      '## Hecho',
+      '',
+      '- [x] '
+    ].join('\n')
+  }
+};
+
+const plantillasPop = document.getElementById('plantillasPop');
+function cierraPlantillas() { plantillasPop.hidden = true; }
+
+function crearDesdePlantilla(clave) {
+  const p = PLANTILLAS[clave];
+  if (!p) return;
+  if (editor.value.trim()) persistir(true);
+  editor.value = p.contenido;
+  fileNameIn.value = p.nombre;
+  currentId = null;
+  dirty = false;
+  savedAt = null;
+  escribirDocs();
+  reiniciarHistorial();
+  render();
+  persistir(true);
+  actualizarSaveInfo();
+  setMensaje(p.contenido
+    ? `📄 Plantilla creada: ${p.nombre}.md`
+    : '📄 Documento en blanco');
+}
+
+plantillasPop.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-tpl]');
+  if (!btn) return;
+  cierraPlantillas();
+  crearDesdePlantilla(btn.dataset.tpl);
+});
+
+/* ---------- 10e. Respaldo de toda la biblioteca ---------- */
+function respaldoBiblioteca() {
+  const datos = { app: 'markdown-editor', version: 1, fecha: new Date().toISOString(), docs };
+  descargarComo(JSON.stringify(datos, null, 2),
+    'markdown-editor-respaldo.json', 'application/json;charset=utf-8');
+  setMensaje(`⬇️ Respaldo descargado (${docs.length} documento(s))`);
+}
+
+function restaurarRespaldo(file) {
+  if (!file) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    try {
+      const datos = JSON.parse(lector.result);
+      const lista = Array.isArray(datos) ? datos : (datos && datos.docs) || [];
+      const validos = lista.filter(d => d && typeof d.content === 'string');
+      if (!validos.length) throw new Error('sin documentos');
+
+      let nuevos = 0;
+      validos.forEach(d => {
+        docs.push({
+          id: docs.some(x => x.id === d.id)
+            ? 'd' + Date.now() + Math.random().toString(36).slice(2, 6)
+            : d.id,
+          name: String(d.name || 'documento').slice(0, 80),
+          content: d.content,
+          updated: Number(d.updated) || Date.now()
+        });
+        nuevos++;
+      });
+      escribirDocs();
+      pintaListaDocs();
+      setMensaje(`⬆️ Restaurados ${nuevos} documento(s)`);
+    } catch (err) {
+      setMensaje('⚠ Ese archivo no es un respaldo válido');
+    }
+  };
+  lector.readAsText(file, 'utf-8');
+}
+
+document.getElementById('btnBackup').addEventListener('click', respaldoBiblioteca);
+document.getElementById('btnRestore').addEventListener('click', () =>
+  document.getElementById('backupInput').click());
+document.getElementById('backupInput').addEventListener('change', (e) => {
+  restaurarRespaldo(e.target.files[0]);
+  e.target.value = '';
+});
+
+/* ---------- 10f. Arrastrar y soltar archivos ---------- */
+const dropZone = document.getElementById('dropZone');
+let dragContador = 0;
+
+function traeArchivos(e) {
+  return !!(e.dataTransfer && e.dataTransfer.types &&
+    Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1);
+}
+
+window.addEventListener('dragenter', (e) => {
+  if (!traeArchivos(e)) return;
+  dragContador++;
+  dropZone.hidden = false;
+});
+window.addEventListener('dragover', (e) => { if (traeArchivos(e)) e.preventDefault(); });
+window.addEventListener('dragleave', () => {
+  dragContador = Math.max(0, dragContador - 1);
+  if (!dragContador) dropZone.hidden = true;
+});
+window.addEventListener('drop', (e) => {
+  if (!traeArchivos(e)) return;
+  e.preventDefault();
+  dragContador = 0;
+  dropZone.hidden = true;
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (!f) return;
+  if (f.type && f.type.indexOf('image/') === 0) pegarImagen(f);
+  else abrirArchivoDisco(f);
+});
+
+/* =========================================================
+   11. INICIO
    ========================================================= */
 
 (function iniciar() {
@@ -946,6 +1379,12 @@ fileNameIn.addEventListener('input', marcarSucio);
   let tema = 'light';
   try { tema = localStorage.getItem(THEME_KEY) || 'light'; } catch (e) {}
   aplicarTema(tema);
+
+  // ajustes de edición (fuente, tamaños, ancho) y modo de vista
+  aplicarAjustes();
+  let modoGuardado = 'split';
+  try { modoGuardado = localStorage.getItem('md-editor:modo') || 'split'; } catch (e) {}
+  aplicarModo(modoGuardado);
 
   // biblioteca
   cargarDocs();

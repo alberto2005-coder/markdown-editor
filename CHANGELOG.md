@@ -3,6 +3,27 @@
 Todas las versiones notables de **Markdown Editor**.
 El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [1.7.0] — 2026-10-07
+
+### Added
+- **Buscar y reemplazar** (`Ctrl+F`): contador de coincidencias `n/total`,
+  opción *Aa* (mayúsculas/minúsculas), *Siguiente*, *Reemplazar* y *Todo*.
+- **Modos de vista**: ✍️ solo editor, ◫ pantalla dividida y 👀 solo vista previa;
+  se recuerda en el navegador.
+- **Panel de ajustes** (⚙️): fuente del editor, tamaño del editor, tamaño de la
+  vista previa, ancho de lectura y tema; con valores por defecto y restablecer.
+- **Plantillas** al crear: documento en blanco, apuntes de clase, README de
+  proyecto, informe y lista de tareas (ahora **＋ Nuevo** abre el menú).
+- **Respaldo de la biblioteca**: descarga y restauración de todo el contenido
+  en un `.json` desde *📚 Mis docs*.
+- **Arrastrar y soltar**: suelta un `.md`/`.txt` para abrirlo o una imagen para
+  insertarla (con zona de aviso a pantalla completa).
+
+### Changed
+- `Ctrl+F` abre la búsqueda propia en lugar de la del navegador.
+- Las funciones de abrir archivo y de insertar imagen se reutilizan
+  (`abrirArchivoDisco()`, `pegarImagen()`) entre botón, pegado y arrastre.
+
 ## [1.6.0] — 2026-10-07
 
 ### Added
@@ -95,6 +116,7 @@ El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.c
 - Icono y favicon SVG propios.
 - Listo para GitHub Pages (`.nojekyll`).
 
+[1.7.0]: #170--2026-10-07
 [1.6.0]: #160--2026-10-07
 [1.5.1]: #151--2026-10-07
 [1.5.0]: #150--2026-10-07

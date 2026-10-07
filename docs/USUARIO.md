@@ -15,7 +15,8 @@ rápido, con los tres primeros apartados te bastan.
 4. Tu trabajo se **guarda solo** (autoguardado). No hay que pulsar nada.
 
 > 💡 La primera vez aparece un documento de ejemplo. Púlsalo, tócalo, y cuando
-> quieras empieza el tuyo con **＋ Nuevo**.
+> quieras empieza el tuyo con **＋ Nuevo** (abre el menú de plantillas: apuntes,
+> README, informe, tareas o simplemente en blanco).
 
 ---
 
@@ -23,8 +24,8 @@ rápido, con los tres primeros apartados te bastan.
 
 | Zona | Qué es | Qué puedes hacer |
 |---|---|---|
-| **Barra superior** | Nombre del documento + botones principales | Renombrar (escribiendo en el nombre), crear, abrir, guardar, biblioteca, exportar, guía, tema |
-| **Barra de formato** | Fila de botones justo debajo | Deshacer/rehacer y formato sin recordar sintaxis |
+| **Barra superior** | Nombre del documento + botones principales | Renombrar (escribiendo en el nombre), crear con plantilla, abrir, guardar, biblioteca, exportar, ajustes, guía, tema |
+| **Barra de formato** | Fila de botones justo debajo | Deshacer/rehacer, formato sin recordar sintaxis, buscar y elegir modo de vista |
 | **Editor ✍️** | Columna izquierda | Escribir Markdown |
 | **Esquema 📑** | Columna estrecha del centro | Índice de títulos; clic = saltar ahí |
 | **Vista previa 👀** | Columna derecha | Cómo se verá al publicar |
@@ -38,11 +39,12 @@ rápido, con los tres primeros apartados te bastan.
 
 | Botón | Qué hace | Atajo |
 |---|---|---|
-| **＋ Nuevo** | Documento en blanco (el actual se guarda antes) | `Ctrl+N` |
-| **📂 Abrir** | Carga un `.md` que ya tengas en tu PC | `Ctrl+O` |
+| **＋ Nuevo** | Abre el **menú de plantillas**: en blanco, apuntes, README, informe o tareas (el actual se guarda antes) | `Ctrl+N` (en blanco) |
+| **📂 Abrir** | Carga un `.md` que ya tengas en tu PC — o **arrástralo** a la ventana | `Ctrl+O` |
 | **💾 Guardar** | Guarda en la biblioteca **y** descarga el archivo `.md` | `Ctrl+S` |
-| **📚 Mis docs** | Ventana con todos tus documentos: abrir (clic), renombrar ✏️, borrar 🗑️ | — |
+| **📚 Mis docs** | Ventana con todos tus documentos: abrir (clic), renombrar ✏️, borrar 🗑️, **⬇️ Respaldo** y **⬆️ Restaurar** | — |
 | **📤 Exportar ▾** | Menú: `.md`, HTML, PDF, copiar y **enlace para compartir** | — |
+| **⚙️ Ajustes** | Fuente, tamaño del editor, tamaño de la vista previa, ancho de lectura y tema | — |
 | **❓ Guía** | Guía rápida de sintaxis y atajos | — |
 | **🌙 / ☀️** | Tema oscuro / claro (se recuerda) | — |
 | **Nombre del documento** | Escribir ahí cambia el nombre del archivo | — |
@@ -61,13 +63,15 @@ rápido, con los tres primeros apartados te bastan.
 | **📊 Tabla ▾** | Abre una **rejilla como en Word**: pasa el ratón, mira el tamaño (`4 × 3`) y haz clic |
 | **{ } Bloque** | Bloque de código de varias líneas |
 | **─ Regla** | Línea separadora |
+| **🔍 Buscar** | Abre **buscar y reemplazar** (`Ctrl+F`): contador `n/total`, *Aa* para distinguir mayúsculas, *Siguiente*, *Reemplazar* y *Todo* |
+| **✍️ ◫ 👀** | **Modo de vista**: solo editor, pantalla dividida o solo vista previa (se recuerda) |
 
 > Los botones de títulos, listas y cita **alternan**: si la línea ya tiene el
 > formato, al pulsarlo se quita.
 
 ---
 
-## 4. Los cuatro gestos que más usarás
+## 4. Los gestos que más usarás
 
 ### ✍️ Escribir un documento
 Escribe con libertad; la vista previa se actualiza sola. Usa el **esquema** de la
@@ -91,6 +95,34 @@ centro para moverte por títulos largos (va resaltando por dónde vas).
 2. Pon el cursor donde quieras y `Ctrl+V`.
 3. La imagen se convierte en parte del Markdown y se ve a la derecha.
 
+*También vale **arrastrar** la imagen desde el explorador hasta la ventana.*
+
+### 🔍 Buscar y reemplazar
+`Ctrl+F` (o **🔍 Buscar**) abre una barra con todo lo necesario:
+
+1. Escribe qué buscar → el contador dice `1/3` y la coincidencia se selecciona.
+2. **Aa** activa/desactiva que importen las mayúsculas.
+3. **Siguiente ↓** salta a la siguiente coincidencia (también `Enter`).
+4. Escribe el texto nuevo y usa **Reemplazar** (la de ahora) o **Todo** (todas).
+5. `Esc` cierra la barra.
+
+### 🗂 Cambiar de modo y ajustar el texto
+- **✍️ ◫ 👀** (derecha de la barra de formato): solo editor para concentrarte,
+  dividido para ver todo, solo vista previa para leer o leerle a alguien.
+- **⚙️ Ajustes**: elige fuente (monoespaciada, sans serif o serif), tamaño del
+  editor y de la vista previa, ancho de lectura y tema. Se guarda solo y hay
+  un botón para **restablecer** los valores.
+
+### 📂 Abrir arrastrando
+Arrastra un archivo `.md` o `.txt` desde el explorador y se abre en la ventana
+(la zona de aviso te confirma dónde soltar). Si sueltas una imagen, se inserta
+igual que con `Ctrl+V`.
+
+### 🧳 Respaldar la biblioteca
+`📚 Mis docs → ⬇️ Respaldo` te baja un `.json` con **todos** tus documentos.
+En otro equipo o tras borrar datos del navegador: `⬆️ Restaurar` y lo tienes
+todo de vuelta (los documentos existentes no se pisan, se añaden).
+
 ---
 
 ## 5. Atajos de teclado
@@ -105,6 +137,7 @@ centro para moverte por títulos largos (va resaltando por dónde vas).
 | `Ctrl + B` | Negrita |
 | `Ctrl + I` | Cursiva |
 | `Ctrl + K` | Enlace |
+| `Ctrl + F` | Buscar y reemplazar |
 | `Ctrl + V` | Pegar imagen |
 | `Tab` | Sangría |
 | `Esc` | Cerrar ventanas |
@@ -156,7 +189,11 @@ También lo tienes todo dentro de la web en **❓ Guía**.
 ## 8. Preguntas frecuentes
 
 **¿Se guarda en la nube?** No, en tu navegador (`localStorage`). Si borras los
-datos del navegador, se borra. Descarga los `.md` de vez en cuando.
+datos del navegador, se borra: haz **📚 Mis docs → ⬇️ Respaldo** de vez en
+cuando y **⬆️ Restaurar** en el equipo nuevo.
+
+**¿Puedo cambiar la fuente o el tamaño?** Sí: **⚙️ Ajustes** → fuente, tamaño
+del editor, tamaño de la vista previa, ancho de lectura y tema.
 
 **¿Funciona sin internet?** Sí para escribir, abrir, guardar y exportar. La vista
 previa completa necesita internet la primera vez (usa `marked` por CDN); sin
