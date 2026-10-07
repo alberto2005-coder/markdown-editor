@@ -12,6 +12,7 @@
  *   7. Variables CSS usadas -> definidas
  *   8. Metadatos mínimos (lang, title, charset, viewport, descripción)
  *   9. Enlaces relativos del README y docs/ existen
+ *  10. i18n: claves del HTML y de app.js presentes en js/i18n.js (es y en)
  *
  * Uso:  node scripts/check.js
  * Sale con código 1 si hay algún fallo (para que falle el CI).
@@ -35,7 +36,7 @@ const aviso = (m) => console.log('   ⚠️  ' + m);
 tit('1. Estructura de carpetas');
 const obligatorios = [
   'index.html', 'README.md', 'CHANGELOG.md', 'LICENSE', '.nojekyll',
-  'css/style.css', 'js/app.js', 'assets/icon.svg', 'assets/favicon.svg',
+  'css/style.css', 'js/app.js', 'js/i18n.js', 'assets/icon.svg', 'assets/favicon.svg',
   'docs/USUARIO.md', 'docs/DESARROLLADOR.md'
 ];
 obligatorios.forEach(f => hay(f) ? ok(f) : mal('Falta el archivo: ' + f));
@@ -147,6 +148,63 @@ mdDocs.forEach(doc => {
     ? rotos.forEach(l => mal(doc + ' → enlace roto: ' + l))
     : ok(doc + ' (' + enlaces.length + ' enlaces)');
 });
+
+/* ─────────────── 10. i18n (es / en) ─────────────── */
+tit('10. i18n — js/i18n.js');
+if (!hay('js/i18n.js')) {
+  mal('Falta el diccionario js/i18n.js');
+} else {
+  // sintaxis
+  try {
+    execFileSync(process.execPath, ['--check', path.join(RAIZ, 'js/i18n.js')], { stdio: 'pipe' });
+    ok('Sintaxis correcta');
+  } catch (e) {
+    mal('Error de sintaxis en i18n.js:\n' + (e.stderr ? e.stderr.toString() : e.message));
+  }
+
+  try {
+    const fuente = lee('js/i18n.js');
+    const dict = new Function('window', fuente + '; return window.I18N;')({});
+    const es = dict.es || {};
+    const en = dict.en || {};
+    const claves = Object.keys(es);
+
+    // (a) paridad es ↔ en
+    const sinEn = claves.filter(k => en[k] === undefined);
+    const soloEn = Object.keys(en).filter(k => es[k] === undefined);
+    sinEn.length  ? sinEn.forEach(k  => mal('Sin traducir al inglés: ' + k))
+                  : ok(claves.length + ' claves, todas en español e inglés');
+    soloEn.forEach(k => mal('Solo existe en inglés: ' + k));
+
+    // (b) claves que usa el HTML
+    const attrsHtml = ['data-i18n', 'data-i18n-html', 'data-i18n-title', 'data-i18n-ph'];
+    const usadas = new Set();
+    attrsHtml.forEach(a => {
+      [...html.matchAll(new RegExp(a + '="([^"]+)"', 'g'))].forEach(m => usadas.add(m[1]));
+    });
+    const rotas = [...usadas].filter(k => claves.indexOf(k) === -1);
+    rotas.forEach(k => mal('El HTML usa "' + k + '" y no está en i18n.js'));
+    ok(attrsHtml.length + ' atributos de traducción · ' + (usadas.size - rotas.length) + ' claves OK');
+
+    // (c) claves que usa app.js: t('clave')
+    const enJs = new Set();
+    [...js.matchAll(/\bt\(\s*'([^']+)'/g)].forEach(m => {
+      if (!m[1].endsWith('.')) enJs.add(m[1]);       // 'tpl.' + x → dinámica
+    });
+    const rotasJs = [...enJs].filter(k => claves.indexOf(k) === -1);
+    rotasJs.forEach(k => mal('app.js pide t("' + k + '") y no está en i18n.js'));
+    ok(enJs.size + ' claves usadas en app.js');
+
+    // (d) claves huérfanas (solo aviso)
+    const sinUsar = claves.filter(k => !usadas.has(k) && !enJs.has(k)
+      && !/^(tpl\.(apuntes|readme|informe|tareas)\.)/.test(k));   // se construyen a mano
+    if (sinUsar.length) {
+      aviso('Claves sin usar: ' + sinUsar.join(', '));
+    }
+  } catch (e) {
+    mal('No se pudo evaluar js/i18n.js: ' + e.message);
+  }
+}
 
 /* ─────────────── Resumen ─────────────── */
 console.log('\n' + '─'.repeat(56));

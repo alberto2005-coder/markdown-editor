@@ -3,6 +3,31 @@
 Todas las versiones notables de **Markdown Editor**.
 El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [1.8.0] — 2026-10-07
+
+### Added
+- **Multi-idioma español / inglés**: nuevo `js/i18n.js` con el diccionario
+  (271 claves; español e inglés fila a fila), botón **🇬🇧 EN / 🇪🇸 ES** en la
+  cabecera y selector en ⚙️ Ajustes. Se recuerda en el navegador y, si no hay
+  elección previa, se usa el idioma del sistema (`navigator.language`).
+- **Papelera**: borrar un documento ya no lo elimina: pasa a **🗑️ Papelera**
+  (máx. 10 documentos) desde donde se puede **restaurar**, **borrar para siempre**
+  o **vaciar**. Nueva clave `md-editor:papelera`.
+- **Exportar la biblioteca a `.zip`** (botón 📦 en *📚 Mis docs*): se genera en
+  el navegador con el formato ZIP *store* y el CRC32 escritos a mano — **sin
+  librerías ni compresión** —, con nombres `.md` sin repetirse.
+- `scripts/check.js` añade la comprobación **10. i18n**: sintaxis de `i18n.js`,
+  paridad es↔en, claves usadas por el HTML (`data-i18n*`) y por `app.js`
+  (`t('clave')`) presentes en el diccionario, y aviso de claves sin usar.
+
+### Changed
+- Todo el texto visible de la interfaz sale del diccionario: mensajes de la
+  barra de estado, ejemplos de la barra de formato, esquema, estadísticas,
+  plantillas, compartir, respaldo, respuestas de apertura/guardado…
+- El HTML exportado lleva `lang="es"` / `lang="en"` y el pie traducido.
+- El aviso de **borrar para siempre** ya no promete que «irá a la papelera»;
+  vaciar la papelera indica el número real de documentos borrados.
+
 ## [1.7.0] — 2026-10-07
 
 ### Added

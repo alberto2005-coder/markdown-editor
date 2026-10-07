@@ -24,7 +24,7 @@ rápido, con los tres primeros apartados te bastan.
 
 | Zona | Qué es | Qué puedes hacer |
 |---|---|---|
-| **Barra superior** | Nombre del documento + botones principales | Renombrar (escribiendo en el nombre), crear con plantilla, abrir, guardar, biblioteca, exportar, ajustes, guía, tema |
+| **Barra superior** | Nombre del documento + botones principales | Renombrar (escribiendo en el nombre), crear con plantilla, abrir, guardar, biblioteca, exportar, ajustes, guía, tema e **idioma** |
 | **Barra de formato** | Fila de botones justo debajo | Deshacer/rehacer, formato sin recordar sintaxis, buscar y elegir modo de vista |
 | **Editor ✍️** | Columna izquierda | Escribir Markdown |
 | **Esquema 📑** | Columna estrecha del centro | Índice de títulos; clic = saltar ahí |
@@ -42,10 +42,11 @@ rápido, con los tres primeros apartados te bastan.
 | **＋ Nuevo** | Abre el **menú de plantillas**: en blanco, apuntes, README, informe o tareas (el actual se guarda antes) | `Ctrl+N` (en blanco) |
 | **📂 Abrir** | Carga un `.md` que ya tengas en tu PC — o **arrástralo** a la ventana | `Ctrl+O` |
 | **💾 Guardar** | Guarda en la biblioteca **y** descarga el archivo `.md` | `Ctrl+S` |
-| **📚 Mis docs** | Ventana con todos tus documentos: abrir (clic), renombrar ✏️, borrar 🗑️, **⬇️ Respaldo** y **⬆️ Restaurar** | — |
+| **📚 Mis docs** | Ventana con todos tus documentos: abrir (clic), renombrar ✏️, borrar 🗑️ — y **papelera** para restaurar, **⬇️ Respaldo**, **📦 ZIP** y **⬆️ Restaurar** | — |
 | **📤 Exportar ▾** | Menú: `.md`, HTML, PDF, copiar y **enlace para compartir** | — |
-| **⚙️ Ajustes** | Fuente, tamaño del editor, tamaño de la vista previa, ancho de lectura y tema | — |
+| **⚙️ Ajustes** | Fuente, tamaño del editor, tamaño de la vista previa, ancho de lectura, tema e **idioma** | — |
 | **❓ Guía** | Guía rápida de sintaxis y atajos | — |
+| **🇬🇧 EN / 🇪🇸 ES** | Cambia **el idioma de toda la interfaz** (español ↔ inglés) al instante | — |
 | **🌙 / ☀️** | Tema oscuro / claro (se recuerda) | — |
 | **Nombre del documento** | Escribir ahí cambia el nombre del archivo | — |
 
@@ -122,6 +123,39 @@ igual que con `Ctrl+V`.
 `📚 Mis docs → ⬇️ Respaldo` te baja un `.json` con **todos** tus documentos.
 En otro equipo o tras borrar datos del navegador: `⬆️ Restaurar` y lo tienes
 todo de vuelta (los documentos existentes no se pisan, se añaden).
+
+### 🌍 Cambiar el idioma (español ↔ inglés)
+Toda la interfaz está en los dos idiomas:
+
+1. Pulsa **🇬🇧 EN** en la barra superior para pasar a inglés (entonces dice
+   **🇪🇸 ES** para volver).
+2. También está en **⚙️ Ajustes → Idioma**.
+3. La elección se recuerda; si nunca has cambiado nada, se usa el idioma de tu
+   navegador.
+
+*Tus documentos, las plantillas que ya tengas escritas y esta guía no se
+traducen: son tuyos y se quedan como los escribiste.*
+
+### 🗑️ Papelera: borrar sin miedo
+Borrar ya no es definitivo: el documento pasa a la **papelera**.
+
+1. **📚 Mis docs → 🗑️ Papelera** — el botón muestra cuántos hay (`🗑️ Papelera (2)`).
+2. Dentro, cada documento tiene dos botones:
+   - **♻️ Restaurar** — vuelve a tu biblioteca igual que estaba.
+   - **❌ Borrar para siempre** — te pregunta antes y ya no se puede recuperar.
+3. **🗑️ Vaciar papelera** borra todos de golpe (también avisa antes).
+
+Cabe un máximo de **10** documentos; si se pasa, se descartan los más antiguos.
+Para salir de la papelera, vuelve a pulsar **↩ Documentos**.
+
+### 📦 Descargar toda la biblioteca en un `.zip`
+`📚 Mis docs → 📦 ZIP` te baja `markdown-editor.zip` con **todos** tus
+documentos sueltos como archivos `.md`, con nombres que nunca se pisan
+(`apuntes.md`, `apuntes (2).md`…). Ideal para llevártelos a otro ordenador o
+guardarlos como copia de seguridad legible.
+
+Si prefieres **un solo archivo** que además se puede *restaurar* dentro de la
+web, usa **⬇️ Respaldo** (`.json`): el `.zip` es para llevar los `.md` sueltos.
 
 ---
 
@@ -201,6 +235,13 @@ conexión hay un render básico de respaldo.
 
 **¿Puedo usarlo en el móvil?** Sí: las columnas se apilan (editor encima, vista
 previa debajo) y el esquema se oculta.
+
+**¿Puedo usarlo en inglés?** Sí: **🇬🇧 EN** en la barra superior o
+**⚙️ Ajustes → Idioma**. Se recuerda la próxima vez. Solo cambia la interfaz:
+tus documentos se quedan como los escribiste.
+
+**¿He borrado un documento por error?** Si no has vaciado la papelera, sigue
+ahí: **📚 Mis docs → 🗑️ Papelera → ♻️** lo devuelve a la biblioteca.
 
 **¿Y si tengo dos documentos con el mismo nombre?** Pasa: se guardan como
 entradas distintas en *Mis docs*. Renombra uno con ✏️.

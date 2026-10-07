@@ -18,45 +18,82 @@ const docsListEl  = document.getElementById('docsList');
 const DOCS_KEY   = 'md-editor:docs';
 const DOC_ID_KEY = 'md-editor:docId';
 const THEME_KEY  = 'md-editor:tema';
+const LANG_KEY   = 'md-editor:idioma';
+const PAPER_KEY  = 'md-editor:papelera';
 
-const EJEMPLO = `# ¡Hola! 👋
+/* =========================================================
+   0. IDIOMA (es / en) — cadenas en js/i18n.js
+   ========================================================= */
 
-Este es tu **editor de Markdown** con la pantalla partida en dos:
+let idioma = 'es';
 
-- ✍️ A la izquierda escribes el Markdown
-- 👀 A la derecha ves cómo va quedando *en vivo*
-
-## Formato básico
-
-| Qué escribes | Cómo se ve |
-|---|---|
-| \`**negrita**\` | **negrita** |
-| \`*cursiva*\` | *cursiva* |
-| \`~~tachado~~\` | ~~tachado~~ |
-
-> Cita destacada: ideal para notas importantes.
-
-### Listas
-
-1. Primer paso
-2. Segundo paso
-   - sub-elemento
-
-- [ ] Tarea pendiente
-- [x] Tarea terminada
-
-### Código
-
-\`\`\`js
-function saludo(nombre) {
-  return "Hola, " + nombre;
+function cargarIdioma() {
+  let guardado = null;
+  try { guardado = localStorage.getItem(LANG_KEY); } catch (e) {}
+  idioma = guardado || ((navigator.language || 'es').toLowerCase().indexOf('en') === 0 ? 'en' : 'es');
+  if (!window.I18N || !I18N[idioma]) idioma = 'es';
 }
-\`\`\`
 
----
+/** Traduce una clave. Admite parámetros: t('msg.saved', { n: 'apuntes.md' }) */
+function t(clave, params) {
+  const dict = (window.I18N && (I18N[idioma] || I18N.es)) || {};
+  let txt = dict[clave];
+  if (txt === undefined && window.I18N) txt = I18N.es[clave];
+  if (txt === undefined) txt = clave;
+  if (params) {
+    Object.keys(params).forEach(k => { txt = txt.split('{' + k + '}').join(params[k]); });
+  }
+  return txt;
+}
 
-Guarda con **Ctrl+S** y pulsa **📚 Mis docs** para ver tu biblioteca. ¡A escribir!
-`;
+/** Vuelca el diccionario sobre la página y refresca lo dinámico. */
+function aplicarIdioma() {
+  document.documentElement.lang = idioma;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const v = t(el.dataset.i18nTitle);
+    el.title = v;
+    el.setAttribute('aria-label', v);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+
+  document.title = t('doc.title');
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.content = t('doc.desc');
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.content = t('doc.ogdesc');
+
+  const btnIdioma = document.getElementById('btnIdioma');
+  if (btnIdioma) btnIdioma.textContent = idioma === 'es' ? '🇬🇧 EN' : '🇪🇸 ES';
+  const selIdioma = document.getElementById('ajIdioma');
+  if (selIdioma) selIdioma.value = idioma;
+
+  // cadenas generadas por código
+  actualizarSaveInfo();
+  pintaListaDocs();
+  actualizaContadorPapelera();
+  construirGrid();
+  render();
+  setMensaje(t('msg.listo'));
+}
+
+function cambiaIdioma() { ponIdioma(idioma === 'es' ? 'en' : 'es'); }
+
+/** Fija el idioma (botón de la barra o desplegable de ⚙️ Ajustes). */
+function ponIdioma(nuevo) {
+  if (nuevo !== 'es' && nuevo !== 'en') return;
+  idioma = nuevo;
+  try { localStorage.setItem(LANG_KEY, idioma); } catch (e) {}
+  aplicarIdioma();
+}
+
+document.getElementById('btnIdioma').addEventListener('click', cambiaIdioma);
+document.getElementById('ajIdioma').addEventListener('change', e => ponIdioma(e.target.value));
+
+/** Documento de ejemplo de la primera visita (según el idioma). */
+function demo() { return t('demo.body'); }
 
 /* =========================================================
    1. BIBLIOTECA DE DOCUMENTOS (localStorage)
@@ -83,7 +120,7 @@ function escribirDocs() {
     localStorage.setItem(DOC_ID_KEY, currentId || '');
     return true;
   } catch (e) {
-    setMensaje('⚠ No se pudo guardar (almacenamiento lleno o bloqueado)');
+    setMensaje(t('msg.saveerr'));
     return false;
   }
 }
@@ -94,7 +131,7 @@ function docActual() {
 
 /** Guarda el contenido actual en la biblioteca (crea el doc si no existe). */
 function persistir(silencioso) {
-  const nombre = (fileNameIn.value || 'documento').trim() || 'documento';
+  const nombre = (fileNameIn.value || t('msg.defaultname')).trim() || t('msg.defaultname');
   let d = docActual();
 
   if (!d) {
@@ -115,7 +152,7 @@ function persistir(silencioso) {
     savedAt = Date.now();
     actualizarSaveInfo();
     pintaListaDocs();
-    if (!silencioso) setMensaje(`✔ Guardado: ${d.name}.md`);
+    if (!silencioso) setMensaje(t('msg.saved', { n: d.name + '.md' }));
   }
 }
 
@@ -125,17 +162,20 @@ function persistir(silencioso) {
 
 function fechaCorta(ts) {
   try {
-    return new Date(ts).toLocaleDateString('es-ES',
+    return new Date(ts).toLocaleDateString(idioma === 'en' ? 'en-US' : 'es-ES',
       { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   } catch (e) { return ''; }
 }
 
 function pintaListaDocs() {
   docsListEl.innerHTML = '';
+
+  if (vistaPapelera) { pintaPapelera(); return; }
+
   const ordenados = [...docs].sort((a, b) => b.updated - a.updated);
 
   if (!ordenados.length) {
-    docsListEl.innerHTML = '<p class="docs-empty">Aún no hay documentos. ¡Crea el primero! ✍️</p>';
+    docsListEl.innerHTML = `<p class="docs-empty">${escapar(t('docs.empty'))}</p>`;
     return;
   }
 
@@ -146,13 +186,13 @@ function pintaListaDocs() {
     const item = document.createElement('div');
     item.className = 'doc-item' + (activo ? ' activo' : '');
     item.innerHTML = `
-      <div class="doc-info" role="button" tabindex="0" title="Abrir '${escapar(d.name)}'">
+      <div class="doc-info" role="button" tabindex="0" title="${escapar(t('docs.open.t', { n: d.name }))}">
         <span class="doc-name">${activo ? '📄 ' : '📕 '}${escapar(d.name)}.md</span>
-        <span class="doc-meta">${palabras} palabras · ${fechaCorta(d.updated)}</span>
+        <span class="doc-meta">${escapar(t('docs.meta', { n: palabras, f: fechaCorta(d.updated) }))}</span>
       </div>
       <div class="doc-tools">
-        <button class="mini" data-act="renombrar" title="Renombrar">✏️</button>
-        <button class="mini" data-act="borrar" title="Borrar">🗑️</button>
+        <button class="mini" data-act="renombrar" title="${escapar(t('docs.rename.t'))}">✏️</button>
+        <button class="mini" data-act="borrar" title="${escapar(t('docs.delete.t'))}">🗑️</button>
       </div>`;
 
     item.querySelector('.doc-info').addEventListener('click', () => abrirDoc(d.id));
@@ -160,6 +200,95 @@ function pintaListaDocs() {
     item.querySelector('[data-act="borrar"]').addEventListener('click', () => borrarDoc(d.id));
     docsListEl.appendChild(item);
   });
+}
+
+/* ---------- papelera: documentos borrados (se pueden restaurar) ---------- */
+
+let papelera = [];      // [{...doc, borrado: ts}] — máximo PAPELERA_MAX
+let vistaPapelera = false;
+const PAPELERA_MAX = 10;
+
+function cargarPapelera() {
+  try {
+    papelera = JSON.parse(localStorage.getItem(PAPER_KEY)) || [];
+    if (!Array.isArray(papelera)) papelera = [];
+  } catch (e) { papelera = []; }
+}
+
+function escribirPapelera() {
+  try { localStorage.setItem(PAPER_KEY, JSON.stringify(papelera)); } catch (e) {}
+  actualizaContadorPapelera();
+}
+
+function actualizaContadorPapelera() {
+  const btn = document.getElementById('btnTrash');
+  const vaciar = document.getElementById('btnVaciar');
+  if (btn) {
+    const etiqueta = vistaPapelera ? t('docs.back') : t('docs.trash');
+    btn.textContent = papelera.length ? `${etiqueta} (${papelera.length})` : etiqueta;
+  }
+  if (vaciar) vaciar.hidden = !(vistaPapelera && papelera.length);
+}
+
+function pintaPapelera() {
+  if (!papelera.length) {
+    docsListEl.innerHTML = `<p class="docs-empty">${escapar(t('docs.trash.empty'))}</p>`;
+    return;
+  }
+
+  papelera.forEach((d, i) => {
+    const palabras = (String(d.content || '').match(/\S+/g) || []).length;
+    const item = document.createElement('div');
+    item.className = 'doc-item';
+    item.innerHTML = `
+      <div class="doc-info" role="button" tabindex="0" title="${escapar(t('docs.restore.btn'))}">
+        <span class="doc-name">🗑️ ${escapar(d.name)}.md</span>
+        <span class="doc-meta">${escapar(t('docs.meta', { n: palabras, f: fechaCorta(d.borrado || d.updated) }))}</span>
+      </div>
+      <div class="doc-tools">
+        <button class="mini" data-act="restaurar" title="${escapar(t('docs.restore.btn'))}">♻️</button>
+        <button class="mini" data-act="definitivo" title="${escapar(t('docs.deleteforever'))}">❌</button>
+      </div>`;
+
+    item.querySelector('.doc-info').addEventListener('click', () => restaurarDoc(i));
+    item.querySelector('[data-act="restaurar"]').addEventListener('click', () => restaurarDoc(i));
+    item.querySelector('[data-act="definitivo"]').addEventListener('click', () => borrarDefinitivo(i));
+    docsListEl.appendChild(item);
+  });
+}
+
+function restaurarDoc(i) {
+  const d = papelera[i];
+  if (!d) return;
+  papelera.splice(i, 1);
+  // si ya existe un documento con ese id, se le da uno nuevo
+  if (docs.some(x => x.id === d.id)) d.id = 'd' + Date.now() + Math.random().toString(36).slice(2, 6);
+  delete d.borrado;
+  docs.unshift(d);
+  escribirDocs();
+  escribirPapelera();
+  pintaListaDocs();
+  setMensaje(t('msg.trashrestored', { n: d.name + '.md' }));
+}
+
+function borrarDefinitivo(i) {
+  const d = papelera[i];
+  if (!d) return;
+  if (!confirm(t('msg.confirmpurge', { n: d.name + '.md' }))) return;   // no vuelve a la biblioteca
+  papelera.splice(i, 1);
+  escribirPapelera();
+  pintaListaDocs();
+  setMensaje(t('msg.trashpurged', { n: d.name + '.md' }));
+}
+
+function vaciarPapelera() {
+  if (!papelera.length) return;
+  const n = papelera.length;
+  if (!confirm(t('msg.vaciar', { n: n }))) return;
+  papelera = [];
+  escribirPapelera();
+  pintaListaDocs();
+  setMensaje(t('msg.trashpurged', { n: n }));
 }
 
 function escapar(s) {
@@ -179,28 +308,34 @@ function abrirDoc(id) {
   reiniciarHistorial();
   cierraDocs();
   render();
-  setMensaje(`Abierto: ${d.name}.md`);
+  setMensaje(t('msg.opened', { n: d.name + '.md' }));
 }
 
 function renombrarDoc(id) {
   const d = docs.find(x => x.id === id);
   if (!d) return;
-  const nuevo = prompt('Nuevo nombre del documento:', d.name);
+  const nuevo = prompt(t('msg.renameprompt'), d.name);
   if (nuevo === null) return;
-  const limpio = nuevo.trim() || 'documento';
+  const limpio = nuevo.trim() || t('msg.defaultname');
   d.name = limpio;
   d.updated = Date.now();
   if (id === currentId) fileNameIn.value = limpio;
   escribirDocs();
   pintaListaDocs();
-  setMensaje(`Renombrado a ${limpio}.md`);
+  setMensaje(t('msg.renamed', { n: limpio + '.md' }));
 }
 
 function borrarDoc(id) {
   const d = docs.find(x => x.id === id);
   if (!d) return;
-  if (!confirm(`¿Borrar "${d.name}.md"? Esto no se puede deshacer.`)) return;
+  if (!confirm(t('msg.confirmdelete', { n: d.name + '.md' }))) return;
   docs = docs.filter(x => x.id !== id);
+
+  // a la papelera: se puede restaurar hasta que se vacíe (máx. 10)
+  papelera.unshift(Object.assign({}, d, { borrado: Date.now() }));
+  if (papelera.length > PAPELERA_MAX) papelera = papelera.slice(0, PAPELERA_MAX);
+  escribirPapelera();
+
   if (currentId === id) {
     currentId = null;
     savedAt = null;
@@ -208,10 +343,15 @@ function borrarDoc(id) {
   }
   escribirDocs();
   pintaListaDocs();
-  setMensaje('Documento borrado');
+  setMensaje(t('msg.deleted', { n: d.name + '.md' }));
 }
 
-function abreDocs()  { pintaListaDocs(); docsModal.hidden = false; }
+function abreDocs() {
+  vistaPapelera = false;
+  actualizaContadorPapelera();
+  pintaListaDocs();
+  docsModal.hidden = false;
+}
 function cierraDocs() { docsModal.hidden = true; }
 
 /* =========================================================
@@ -221,7 +361,7 @@ function cierraDocs() { docsModal.hidden = true; }
 function nuevo() {
   if (editor.value.trim()) persistir(true);
   editor.value = '';
-  fileNameIn.value = 'documento';
+  fileNameIn.value = t('msg.defaultname');
   currentId = null;
   dirty = false;
   savedAt = null;
@@ -230,7 +370,7 @@ function nuevo() {
   render();
   editor.focus();
   actualizarSaveInfo();
-  setMensaje('Documento nuevo');
+  setMensaje(t('msg.newdoc'));
 }
 
 function abrirDisco() {
@@ -240,7 +380,7 @@ function abrirDisco() {
 function guardar() {
   persistir(false);
   const base = descargar();
-  setMensaje(`💾 Guardado en biblioteca y descargado: ${base}`);
+  setMensaje(t('msg.savedfile', { n: base }));
 }
 
 /** Descarga cualquier texto como archivo. */
@@ -258,7 +398,7 @@ function descargarComo(contenido, nombre, tipo) {
 }
 
 function descargar() {
-  const nombre = (fileNameIn.value || 'documento').trim().replace(/[\\/:*?"<>|]/g, '_');
+  const nombre = (fileNameIn.value || t('msg.defaultname')).trim().replace(/[\\/:*?"<>|]/g, '_');
   const base = nombre.endsWith('.md') ? nombre : nombre + '.md';
   descargarComo(editor.value, base, 'text/markdown;charset=utf-8');
   return base;
@@ -266,15 +406,15 @@ function descargar() {
 
 function copiar() {
   navigator.clipboard.writeText(editor.value)
-    .then(() => setMensaje('📋 Markdown copiado al portapapeles ✔'))
-    .catch(() => setMensaje('No se pudo copiar'));
+    .then(() => setMensaje(t('msg.copied')))
+    .catch(() => setMensaje(t('msg.copyfail')));
 }
 
 /** Carga un archivo de texto (.md/.txt) desde el disco y lo abre. */
 function abrirArchivoDisco(file) {
   if (!file) return;
   if (!/\.(md|markdown|mdown|txt)$/i.test(file.name) && !/^text\//.test(file.type)) {
-    setMensaje('⚠ Tipo no admitido: ' + file.name + ' (usa .md o .txt)');
+    setMensaje(t('msg.badtype', { n: file.name }));
     return;
   }
   const lector = new FileReader();
@@ -286,7 +426,7 @@ function abrirArchivoDisco(file) {
     reiniciarHistorial();
     render();
     persistir(true);
-    setMensaje(`📂 Abierto: ${file.name}`);
+    setMensaje(t('msg.openedfile', { n: file.name }));
   };
   lector.readAsText(file, 'utf-8');
 }
@@ -311,25 +451,25 @@ function marcarSucio() {
 
 function tiempoDesde(ts) {
   const s = Math.floor((Date.now() - ts) / 1000);
-  if (s < 15)  return 'ahora mismo';
-  if (s < 60)  return `hace ${s} s`;
+  if (s < 15)  return t('msg.now');
+  if (s < 60)  return t('msg.ago.s', { n: s });
   const m = Math.floor(s / 60);
-  if (m < 60)  return `hace ${m} min`;
+  if (m < 60)  return t('msg.ago.min', { n: m });
   const h = Math.floor(m / 60);
-  return `hace ${h} h`;
+  return t('msg.ago.h', { n: h });
 }
 
 function actualizarSaveInfo() {
   if (dirty) {
-    saveInfoEl.textContent = '● Cambios sin guardar';
+    saveInfoEl.textContent = t('msg.dirty');
     saveInfoEl.classList.add('dirty');
     saveInfoEl.classList.remove('ok');
   } else if (savedAt) {
-    saveInfoEl.textContent = '✔ Autoguardado ' + tiempoDesde(savedAt);
+    saveInfoEl.textContent = t('msg.autosave', { n: tiempoDesde(savedAt) });
     saveInfoEl.classList.remove('dirty');
     saveInfoEl.classList.add('ok');
   } else {
-    saveInfoEl.textContent = 'Sin cambios';
+    saveInfoEl.textContent = t('msg.nochanges');
     saveInfoEl.classList.remove('dirty', 'ok');
   }
 }
@@ -401,13 +541,13 @@ function restaura(paso, mensaje) {
 function deshacer() {
   if (!historial.length) return;
   futuro.push(ultimo);
-  restaura(historial.pop(), '↶ Deshecho');
+  restaura(historial.pop(), t('msg.undo'));
 }
 
 function rehacer() {
   if (!futuro.length) return;
   historial.push(ultimo);
-  restaura(futuro.pop(), '↷ Rehecho');
+  restaura(futuro.pop(), t('msg.redo'));
 }
 
 /** Vacía el historial (documento nuevo, abrir otro, enlace compartido). */
@@ -481,20 +621,20 @@ function prefijoConEjemplo(p, ejemplo) {
 
 function comando(cmd) {
   switch (cmd) {
-    case 'h1':        prefijoConEjemplo('# ', 'Título 1');  break;
-    case 'h2':        prefijoConEjemplo('## ', 'Título 2'); break;
-    case 'h3':        prefijoConEjemplo('### ', 'Título 3'); break;
-    case 'bold':      envolver('**', '**', 'negrita'); break;
-    case 'italic':    envolver('*', '*', 'cursiva'); break;
-    case 'strike':    envolver('~~', '~~', 'tachado'); break;
-    case 'code':      envolver('`', '`', 'código'); break;
-    case 'codeblock': envolver('```\n', '\n```', 'código'); break;
-    case 'link':      envolver('[', '](https://)', 'enlace'); break;
-    case 'image':     envolver('![', '](https://)', 'texto alternativo'); break;
-    case 'ul':        prefijoConEjemplo('- ', 'elemento'); break;
-    case 'ol':        prefijoConEjemplo('1. ', 'primer paso'); break;
-    case 'check':     prefijoConEjemplo('- [ ] ', 'tarea pendiente'); break;
-    case 'quote':     prefijoConEjemplo('> ', 'cita destacada'); break;
+    case 'h1':        prefijoConEjemplo('# ', t('ex.h1'));  break;
+    case 'h2':        prefijoConEjemplo('## ', t('ex.h2')); break;
+    case 'h3':        prefijoConEjemplo('### ', t('ex.h3')); break;
+    case 'bold':      envolver('**', '**', t('ex.bold')); break;
+    case 'italic':    envolver('*', '*', t('ex.italic')); break;
+    case 'strike':    envolver('~~', '~~', t('ex.strike')); break;
+    case 'code':      envolver('`', '`', t('ex.code')); break;
+    case 'codeblock': envolver('```\n', '\n```', t('ex.code')); break;
+    case 'link':      envolver('[', '](https://)', t('ex.link')); break;
+    case 'image':     envolver('![', '](https://)', t('ex.image')); break;
+    case 'ul':        prefijoConEjemplo('- ', t('ex.item')); break;
+    case 'ol':        prefijoConEjemplo('1. ', t('ex.step')); break;
+    case 'check':     prefijoConEjemplo('- [ ] ', t('ex.task')); break;
+    case 'quote':     prefijoConEjemplo('> ', t('ex.quote')); break;
     case 'table':     insertarTabla(4, 3); break;
     case 'hr':
       editor.setRangeText('\n\n---\n\n', editor.selectionStart, editor.selectionEnd, 'end');
@@ -523,7 +663,7 @@ function construirGrid() {
       cell.className = 'cell';
       cell.dataset.r = r;
       cell.dataset.c = c;
-      cell.title = `${c} columnas × ${r} filas`;
+      cell.title = t('msg.cells', { c: c, f: r });
       cell.addEventListener('mouseenter', () => pintaGrid(r, c));
       cell.addEventListener('focus', () => pintaGrid(r, c));
       cell.addEventListener('click', () => { insertarTabla(c, r); cierraTablaPop(); });
@@ -561,7 +701,7 @@ function cierraTablaPop() { tablePop.hidden = true; }
 
 function insertarTabla(cols, filas) {
   const cabecera = [], separador = [], cuerpo = [];
-  for (let i = 1; i <= cols; i++) cabecera.push('Columna ' + i);
+  for (let i = 1; i <= cols; i++) cabecera.push(t('ex.col') + i);
   for (let i = 0; i < cols; i++) separador.push('---');
   for (let r = 1; r < filas; r++) cuerpo.push(new Array(cols).fill(''));
 
@@ -574,7 +714,7 @@ function insertarTabla(cols, filas) {
   editor.setRangeText(md, editor.selectionStart, editor.selectionEnd, 'end');
   editor.focus();
   trasCambiar();
-  setMensaje(`📊 Tabla de ${cols} × ${filas} insertada`);
+  setMensaje(t('msg.table', { c: cols, f: filas }));
 }
 
 document.getElementById('toolbar').addEventListener('click', (e) => {
@@ -646,17 +786,17 @@ const CSS_EXPORT = `
 `;
 
 function exportarHTML() {
-  const titulo = (fileNameIn.value || 'documento').trim() || 'documento';
+  const titulo = (fileNameIn.value || t('msg.defaultname')).trim() || t('msg.defaultname');
   const doc =
-    '<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n' +
+    `<!DOCTYPE html>\n<html lang="${idioma}">\n<head>\n<meta charset="UTF-8">\n` +
     '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
     `<title>${escapar(titulo)}</title>\n<style>${CSS_EXPORT}</style>\n</head>\n<body>\n` +
     `<article>${preview.innerHTML}</article>\n` +
-    '<footer>Generado con <strong>Markdown Editor</strong> · © 2026 Alberto Ortiz (alberto2005-coder) · Uso no comercial</footer>\n' +
+    `<footer>${t('msg.exportfooter')}</footer>\n` +
     '</body>\n</html>\n';
 
   descargarComo(doc, titulo.replace(/[\\/:*?"<>|]/g, '_') + '.html', 'text/html;charset=utf-8');
-  setMensaje(`🌐 Exportado: ${titulo}.html`);
+  setMensaje(t('msg.exported', { n: titulo + '.html' }));
 }
 
 /* --- codificación para compartir por enlace --- */
@@ -677,17 +817,15 @@ function desdeB64(s) {
 
 function compartir() {
   const enlace = location.href.split('#')[0] + '#d=' + aB64(editor.value);
-  const aviso = enlace.length > 20000
-    ? '\n\n⚠ Aviso: el documento es muy grande y el enlace puede fallar en algunos programas.'
-    : '';
+  const aviso = enlace.length > 20000 ? '\n\n' + t('msg.linkwarn') : '';
 
   navigator.clipboard.writeText(enlace)
-    .then(() => setMensaje('🔗 Enlace copiado. Pégalo para compartir el documento ✔' + (aviso ? ' (ver aviso)' : '')))
+    .then(() => setMensaje(t('msg.linkcopied') + (aviso ? t('msg.linkaviso') : '')))
     .catch(() => {
-      prompt('Copia este enlace para compartir:', enlace);
+      prompt(t('msg.linkprompt'), enlace);
     });
 
-  if (aviso) setTimeout(() => alert('⚠ El documento pesa mucho y el enlace resultante es muy largo.\nFuncionará en el navegador, pero algunos programas lo podrían cortar.' + aviso), 150);
+  if (aviso) setTimeout(() => alert(t('msg.linkalert') + aviso), 150);
 }
 
 /** Si la página se abre con #d=..., carga el documento que trae el enlace. */
@@ -697,7 +835,7 @@ function cargarDesdeEnlace() {
     const txt = desdeB64(location.hash.slice(3));
     if (!txt) return false;
     editor.value = txt;
-    fileNameIn.value = 'compartido';
+    fileNameIn.value = t('msg.sharedname');
     currentId = null;
     history.replaceState(null, '', location.pathname + location.search);
     return true;
@@ -712,16 +850,16 @@ function cargarDesdeEnlace() {
 function pegarImagen(file) {
   if (!file) return;
   if (file.size > 1500000) {
-    setMensaje('⚠ Imagen demasiado grande para insertar (máx. 1,5 MB)');
+    setMensaje(t('msg.imgbig'));
     return;
   }
   const lector = new FileReader();
   lector.onload = () => {
-    const md = `![imagen pegada](${lector.result})`;
+    const md = `![${t('ex.image')}](${lector.result})`;
     editor.setRangeText(md, editor.selectionStart, editor.selectionEnd, 'end');
     trasCambiar();
     const pesa = Math.round(lector.result.length / 1024);
-    setMensaje(`🖼 Imagen insertada en el Markdown (${pesa} KB en base64)`);
+    setMensaje(t('msg.imgok', { n: pesa }));
   };
   lector.readAsDataURL(file);
 }
@@ -783,23 +921,23 @@ function construirEsquema() {
     const m = l.match(/^(#{1,4})\s+(.*)$/);
     if (m) titulos.push({
       nivel: m[1].length,
-      texto: (m[2] || 'Sin título').replace(/[*_`~]/g, '').trim() || 'Sin título',
+      texto: (m[2] || t('msg.sinuntitulo')).replace(/[*_`~]/g, '').trim() || t('msg.sinuntitulo'),
       linea: i
     });
   });
 
   if (!titulos.length) {
-    outlineList.innerHTML = '<p class="outline-empty">Añade títulos con <code>#</code> y aparecerán aquí.</p>';
+    outlineList.innerHTML = `<p class="outline-empty">${t('msg.outlineempty')}</p>`;
     return;
   }
 
   outlineList.innerHTML = '';
-  titulos.forEach((t, i) => {
+  titulos.forEach((t2, i) => {
     const b = document.createElement('button');
-    b.className = 'outline-item nivel-' + t.nivel;
+    b.className = 'outline-item nivel-' + t2.nivel;
     b.dataset.index = i;
-    b.textContent = t.texto;
-    b.title = 'Línea ' + (t.linea + 1) + ' · ' + t.texto;
+    b.textContent = t2.texto;
+    b.title = t('msg.line', { n: t2.linea + 1, t: t2.texto });
     b.addEventListener('click', () => saltarA(i));
     outlineList.appendChild(b);
   });
@@ -871,8 +1009,8 @@ function render() {
   const palabras = (md.match(/\S+/g) || []).length;
   const min = Math.max(1, Math.round(palabras / 200));
   statsEl.textContent = palabras
-    ? `${palabras} palabras · ${min} min de lectura`
-    : '0 palabras';
+    ? t('msg.stat', { n: palabras, m: min })
+    : t('msg.stat0');
 
   construirEsquema();
 }
@@ -974,7 +1112,7 @@ fileNameIn.addEventListener('input', marcarSucio);
 
 /* =========================================================
    10. EXTRAS: MODOS, BÚSQUEDA, AJUSTES, PLANTILLAS,
-       RESPALDO Y ARRASTRAR ARCHIVOS
+       RESPALDO, ZIP, PAPELERA Y ARRASTRAR ARCHIVOS
    ========================================================= */
 
 /* ---------- 10a. Modos de vista ---------- */
@@ -1060,7 +1198,7 @@ function reemplazaTodo() {
   editor.setSelectionRange(0, 0);
   trasCambiar();
   buscarCount.textContent = '0/0';
-  setMensaje(`🔍 ${antes} coincidencia(s) reemplazada(s)`);
+  setMensaje(t('msg.replaced', { n: antes }));
 }
 
 buscarTxt.addEventListener('input', () => resaltaDesde(0));
@@ -1142,7 +1280,7 @@ document.getElementById('btnResetAjustes').addEventListener('click', () => {
   ajustes = Object.assign({}, AJUSTES_DEFECTO);
   guardarAjustes();
   aplicarAjustes();
-  setMensaje('⚙️ Ajustes restablecidos');
+  setMensaje(t('msg.reset'));
 });
 
 function cierraAjustes() { settingsModal.hidden = true; }
@@ -1156,119 +1294,24 @@ document.getElementById('btnSettings').addEventListener('click', () => {
 document.getElementById('btnCloseSettings').addEventListener('click', cierraAjustes);
 settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) cierraAjustes(); });
 
-/* ---------- 10d. Plantillas ---------- */
-const PLANTILLAS = {
-  blanco: { nombre: 'documento', contenido: '' },
+/* ---------- 10d. Plantillas (texto en el idioma activo) ---------- */
+const PLANTILLAS = ['blanco', 'apuntes', 'readme', 'informe', 'tareas'];
 
-  apuntes: {
-    nombre: 'apuntes',
-    contenido: [
-      '# Apuntes — [Asignatura]',
-      '',
-      '**Fecha:** ' + new Date().toLocaleDateString('es-ES'),
-      '**Tema:** ',
-      '',
-      '## Resumen',
-      '',
-      '',
-      '## Conceptos clave',
-      '',
-      '- ',
-      '',
-      '## Dudas para preguntar',
-      '',
-      '- [ ] ',
-      '',
-      '---',
-      '',
-      '_Apuntes de Alberto Ortiz_'
-    ].join('\n')
-  },
-
-  readme: {
-    nombre: 'README',
-    contenido: [
-      '# Nombre del proyecto',
-      '',
-      '> Descripción corta de una línea.',
-      '',
-      '## Características',
-      '',
-      '- ',
-      '',
-      '## Instalación',
-      '',
-      '```bash',
-      'git clone https://github.com/usuario/proyecto.git',
-      '```',
-      '',
-      '## Uso',
-      '',
-      '```python',
-      'import proyecto',
-      '```',
-      '',
-      '## Licencia',
-      '',
-      'Consulta el archivo `LICENSE`.'
-    ].join('\n')
-  },
-
-  informe: {
-    nombre: 'informe',
-    contenido: [
-      '# Informe — [Título]',
-      '',
-      '**Autor:** Alberto Ortiz',
-      '**Fecha:** ' + new Date().toLocaleDateString('es-ES'),
-      '',
-      '## 1. Resumen',
-      '',
-      '',
-      '## 2. Objetivos',
-      '',
-      '1. ',
-      '',
-      '## 3. Desarrollo',
-      '',
-      '',
-      '## 4. Conclusiones',
-      '',
-      '',
-      '## 5. Fuentes',
-      '',
-      '1. '
-    ].join('\n')
-  },
-
-  tareas: {
-    nombre: 'tareas',
-    contenido: [
-      '# Tareas — [Proyecto]',
-      '',
-      '## Hoy',
-      '',
-      '- [ ] ',
-      '- [ ] ',
-      '- [ ] ',
-      '',
-      '## Esta semana',
-      '',
-      '- [ ] ',
-      '',
-      '## Hecho',
-      '',
-      '- [x] '
-    ].join('\n')
-  }
-};
+/** Devuelve {nombre, contenido} de una plantilla traducida. */
+function plantilla(clave) {
+  if (clave === 'blanco') return { nombre: t('tpl.blank.name'), contenido: '' };
+  const fecha = new Date().toLocaleDateString(idioma === 'en' ? 'en-US' : 'es-ES');
+  return {
+    nombre: t('tpl.' + clave + '.name'),
+    contenido: t('tpl.' + clave + '.body').split('{fecha}').join(fecha)
+  };
+}
 
 const plantillasPop = document.getElementById('plantillasPop');
 function cierraPlantillas() { plantillasPop.hidden = true; }
 
 function crearDesdePlantilla(clave) {
-  const p = PLANTILLAS[clave];
-  if (!p) return;
+  const p = plantilla(clave);
   if (editor.value.trim()) persistir(true);
   editor.value = p.contenido;
   fileNameIn.value = p.nombre;
@@ -1281,8 +1324,8 @@ function crearDesdePlantilla(clave) {
   persistir(true);
   actualizarSaveInfo();
   setMensaje(p.contenido
-    ? `📄 Plantilla creada: ${p.nombre}.md`
-    : '📄 Documento en blanco');
+    ? t('msg.tpl', { n: p.nombre + '.md' })
+    : t('msg.tplblank'));
 }
 
 plantillasPop.addEventListener('click', (e) => {
@@ -1297,7 +1340,7 @@ function respaldoBiblioteca() {
   const datos = { app: 'markdown-editor', version: 1, fecha: new Date().toISOString(), docs };
   descargarComo(JSON.stringify(datos, null, 2),
     'markdown-editor-respaldo.json', 'application/json;charset=utf-8');
-  setMensaje(`⬇️ Respaldo descargado (${docs.length} documento(s))`);
+  setMensaje(t('msg.backup', { n: docs.length }));
 }
 
 function restaurarRespaldo(file) {
@@ -1316,7 +1359,7 @@ function restaurarRespaldo(file) {
           id: docs.some(x => x.id === d.id)
             ? 'd' + Date.now() + Math.random().toString(36).slice(2, 6)
             : d.id,
-          name: String(d.name || 'documento').slice(0, 80),
+          name: String(d.name || t('msg.defaultname')).slice(0, 80),
           content: d.content,
           updated: Number(d.updated) || Date.now()
         });
@@ -1324,9 +1367,9 @@ function restaurarRespaldo(file) {
       });
       escribirDocs();
       pintaListaDocs();
-      setMensaje(`⬆️ Restaurados ${nuevos} documento(s)`);
+      setMensaje(t('msg.restored', { n: nuevos }));
     } catch (err) {
-      setMensaje('⚠ Ese archivo no es un respaldo válido');
+      setMensaje(t('msg.badbackup'));
     }
   };
   lector.readAsText(file, 'utf-8');
@@ -1340,7 +1383,107 @@ document.getElementById('backupInput').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
-/* ---------- 10f. Arrastrar y soltar archivos ---------- */
+/* ---------- 10f. Exportar la biblioteca como .zip (sin librerías) ---------- */
+const CRC_TABLA = (function () {
+  const tabla = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    tabla[n] = c >>> 0;
+  }
+  return tabla;
+})();
+
+function crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLA[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+const u16 = n => [n & 255, (n >> 8) & 255];
+const u32 = n => [n & 255, (n >> 8) & 255, (n >> 16) & 255, ((n >>> 24) & 255)];
+
+/** Monta un .zip en memoria con el método "store" (sin comprimir). */
+function crearZip(archivos) {
+  const enc = new TextEncoder();
+  const ahora = new Date();
+  const hora  = (ahora.getHours() << 11) | (ahora.getMinutes() << 5) | (ahora.getSeconds() >> 1);
+  const fecha = ((ahora.getFullYear() - 1980) << 9) | ((ahora.getMonth() + 1) << 5) | ahora.getDate();
+
+  const locales  = [];
+  const centrales = [];
+  let offset = 0;
+
+  archivos.forEach(f => {
+    const nombre = enc.encode(f.nombre);
+    const datos  = enc.encode(f.texto);
+    const crc = crc32(datos);
+
+    const local = new Uint8Array([
+      ...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0),
+      ...u16(hora), ...u16(fecha),
+      ...u32(crc), ...u32(datos.length), ...u32(datos.length),
+      ...u16(nombre.length), ...u16(0), ...nombre
+    ]);
+
+    const central = new Uint8Array([
+      ...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0),
+      ...u16(hora), ...u16(fecha),
+      ...u32(crc), ...u32(datos.length), ...u32(datos.length),
+      ...u16(nombre.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0),
+      ...u32(0), ...u32(offset), ...nombre
+    ]);
+
+    locales.push(local, datos);
+    centrales.push(central);
+    offset += local.length + datos.length;
+  });
+
+  const cdTam = centrales.reduce((s, c) => s + c.length, 0);
+  const fin = new Uint8Array([
+    ...u32(0x06054b50), ...u16(0), ...u16(0),
+    ...u16(archivos.length), ...u16(archivos.length),
+    ...u32(cdTam), ...u32(offset), ...u16(0)
+  ]);
+
+  return new Blob([...locales, ...centrales, fin], { type: 'application/zip' });
+}
+
+function exportarZip() {
+  if (!docs.length) { setMensaje(t('docs.empty')); return; }
+
+  const usados = {};
+  const archivos = [...docs]
+    .sort((a, b) => b.updated - a.updated)
+    .map(d => {
+      const base = (String(d.name || '').trim() || t('msg.defaultname'))
+        .replace(/[\\/:*?"<>|]/g, '_');
+      let nombre = base + '.md';
+      let n = 2;
+      while (usados[nombre]) nombre = `${base} (${n++}).md`;   // sin repetir
+      usados[nombre] = 1;
+      return { nombre, texto: String(d.content || '') };
+    });
+
+  try {
+    descargarComo(crearZip(archivos), 'markdown-editor.zip', 'application/zip');
+    setMensaje(t('msg.zip', { n: archivos.length }));
+  } catch (e) {
+    setMensaje(t('msg.ziperr'));
+  }
+}
+
+document.getElementById('btnZip').addEventListener('click', exportarZip);
+
+/* ---------- 10g. Papelera: mostrar / restaurar / vaciar ---------- */
+document.getElementById('btnTrash').addEventListener('click', () => {
+  vistaPapelera = !vistaPapelera;
+  actualizaContadorPapelera();
+  pintaListaDocs();
+});
+document.getElementById('btnVaciar').addEventListener('click', vaciarPapelera);
+
+/* ---------- 10h. Arrastrar y soltar archivos ---------- */
 const dropZone = document.getElementById('dropZone');
 let dragContador = 0;
 
@@ -1375,19 +1518,25 @@ window.addEventListener('drop', (e) => {
    ========================================================= */
 
 (function iniciar() {
+  // idioma (es / en) — antes que nada, para que todo se pinte traducido
+  cargarIdioma();
   // tema
   let tema = 'light';
   try { tema = localStorage.getItem(THEME_KEY) || 'light'; } catch (e) {}
   aplicarTema(tema);
+
+  // biblioteca y papelera
+  cargarDocs();
+  cargarPapelera();
+
+  // volcar el idioma activo sobre toda la página
+  aplicarIdioma();
 
   // ajustes de edición (fuente, tamaños, ancho) y modo de vista
   aplicarAjustes();
   let modoGuardado = 'split';
   try { modoGuardado = localStorage.getItem('md-editor:modo') || 'split'; } catch (e) {}
   aplicarModo(modoGuardado);
-
-  // biblioteca
-  cargarDocs();
 
   // ¿se abrió desde un enlace compartido? (#d=...)
   if (cargarDesdeEnlace()) {
@@ -1396,7 +1545,7 @@ window.addEventListener('drop', (e) => {
     render();
     pintaListaDocs();
     actualizarSaveInfo();
-    setMensaje('🔗 Documento compartido abierto · guárdalo con un nombre propio');
+    setMensaje(t('msg.shared'));
     document.getElementById('btnOutline').classList.toggle('on', !outlinePane.classList.contains('oculto'));
     return;
   }
@@ -1408,12 +1557,12 @@ window.addEventListener('drop', (e) => {
     fileNameIn.value = abierto.name;
     savedAt = abierto.updated;
   } else {
-    let contenido = null, nombre = 'documento';
+    let contenido = null, nombre = t('msg.defaultname');
     try {
       contenido = localStorage.getItem('md-editor:contenido');
-      nombre = localStorage.getItem('md-editor:nombre') || 'documento';
+      nombre = localStorage.getItem('md-editor:nombre') || t('msg.defaultname');
     } catch (e) {}
-    editor.value = contenido !== null && contenido !== undefined ? contenido : EJEMPLO;
+    editor.value = contenido !== null && contenido !== undefined ? contenido : demo();
     fileNameIn.value = nombre;
   }
 
@@ -1427,5 +1576,5 @@ window.addEventListener('drop', (e) => {
   render();
   pintaListaDocs();
   actualizarSaveInfo();
-  setMensaje('Listo · escribe y míralo aparecer a la derecha 👉');
+  setMensaje(t('msg.ready'));
 })();

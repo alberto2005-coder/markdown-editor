@@ -11,6 +11,7 @@ Si solo vas a usar la web, ve al [manual de usuario](USUARIO.md).
 |---|---|
 | Lenguajes | HTML5, CSS3, JavaScript (ES2020) **sin frameworks ni build** |
 | Dependencias | [`marked`](https://marked.js.org/) y [`DOMPurify`](https://github.com/cure53/DOMPurify) por CDN (jsDelivr) |
+| Idiomas | `js/i18n.js` — diccionario es/en propio, sin librerías de i18n |
 | Persistencia | `localStorage` (sin backend) |
 | Imágenes | SVG vectoriales propios |
 | Compatibilidad | Navegadores modernos (Chrome/Edge/Firefox/Safari). Si falla `crypto`/`TextEncoder` no hace falta: no se usan APIs exóticas. |
@@ -32,9 +33,10 @@ markdown-editor/
 ├── .gitignore          Qué no subir a Git
 ├── .editorconfig       Estilo de edición uniforme
 ├── css/style.css       Estilos + variables de tema + print
-├── js/app.js           Toda la lógica (≈1430 líneas, 11 secciones)
+├── js/app.js           Toda la lógica (≈1580 líneas, secciones 0–11)
+├── js/i18n.js          Diccionario de textos (es / en) — se carga antes que app.js
 ├── scripts/check.js    Validador sin dependencias (lo usa el CI)
-├── .github/workflows/ci.yml  CI: sintaxis, rutas, ids y servido
+├── .github/workflows/ci.yml  CI: sintaxis, rutas, ids, i18n y servido
 ├── assets/icon.svg     Logo (cabecera, og:image, apple-touch-icon)
 ├── assets/favicon.svg  Favicon
 └── docs/
@@ -51,8 +53,9 @@ Busca `/* ======` o el número de sección.
 
 | Sección | Contenido | Piezas clave |
 |---|---|---|
+| **0. Idioma** | Diccionario es/en y volcado sobre la página | `cargarIdioma()`, `t(clave, params)`, `aplicarIdioma()`, `ponIdioma()`, `demo()` |
 | **1. Biblioteca** | CRUD de documentos en `localStorage` | `cargarDocs()`, `escribirDocs()`, `persistir(silencioso)`, `docActual()` |
-| **2. Modal Mis docs** | Pinta la lista y sus acciones | `pintaListaDocs()`, `abrirDoc()`, `renombrarDoc()`, `borrarDoc()` |
+| **2. Modal Mis docs** | Pinta la lista, la papelera y sus acciones | `pintaListaDocs()`, `pintaPapelera()`, `abrirDoc()`, `renombrarDoc()`, `borrarDoc()`, `restaurarDoc()`, `borrarDefinitivo()`, `vaciarPapelera()` |
 | **3. Acciones de archivo** | Nuevo / abrir / descargar | `nuevo()`, `abrirDisco()`, `abrirArchivoDisco(file)`, `descargar()`, `descargarComo()`, `guardar()`, `copiar()` |
 | **4. Autoguardado** | 1,2 s de rebote + indicador del pie | `marcarSucio()`, `persistir`, `actualizarSaveInfo()`, `tiempoDesde()`, `beforeunload` |
 | **4b. Historial** | Deshacer/rehacer propios | `notaCambio()`, `deshacer()`, `rehacer()`, `restaura()`, `reiniciarHistorial()` |
@@ -68,10 +71,12 @@ Busca `/* ======` o el número de sección.
 | **10a. Modos de vista** | Solo editor / dividido / solo preview | `aplicarModo(m)`, clase `split modo-*`, `md-editor:modo` |
 | **10b. Buscar y reemplazar** | Barra con contador y reemplazo | `posicionesBusqueda()`, `resaltaDesde()`, `siguienteCoincidencia()`, `reemplazaUno()`, `reemplazaTodo()` |
 | **10c. Ajustes** | Fuente, tamaños, ancho y tema | `aplicarAjustes()` (variables CSS), `cambiaAjuste()`, `AJUSTES_DEFECTO`, `md-editor:ajustes` |
-| **10d. Plantillas** | Crear desde plantilla | `PLANTILLAS`, `plantillasPop`, `crearDesdePlantilla(clave)` |
+| **10d. Plantillas** | Crear desde plantilla (texto traducido) | `PLANTILLAS` (claves), `plantilla(clave)`, `plantillasPop`, `crearDesdePlantilla(clave)` |
 | **10e. Respaldo** | Exportar/importar la biblioteca | `respaldoBiblioteca()`, `restaurarRespaldo(file)`, `#backupInput` |
-| **10f. Arrastrar** | Soltar `.md` o imagen | `traeArchivos(e)`, listeners `dragenter/over/leave/drop`, `#dropZone` |
-| **11. Inicio** | `iniciar()` (IIFE) | Restaura tema, ajustes, modo, biblioteca, esquema y contenido |
+| **10f. ZIP** | `.zip` de toda la biblioteca, escrito a mano | `crc32(bytes)`, `crearZip([{nombre, texto}])`, `exportarZip()`, `CRC_TABLA` |
+| **10g. Papelera** | Mostrar / restaurar / borrar para siempre | `actualizaContadorPapelera()`, `#btnTrash`, `#btnVaciar`, `PAPELERA_MAX` |
+| **10h. Arrastrar** | Soltar `.md` o imagen | `traeArchivos(e)`, listeners `dragenter/over/leave/drop`, `#dropZone` |
+| **11. Inicio** | `iniciar()` (IIFE) | Idioma, tema, biblioteca, papelera, ajustes, modo, esquema y contenido |
 
 ### Flujo de un cambio de texto
 
@@ -104,6 +109,8 @@ escribir en `localStorage` en cada pulsación.
 |---|---|
 | `md-editor:docs` | `[{ id, name, content, updated }]` — biblioteca |
 | `md-editor:docId` | `id` del documento abierto (`''` si ninguno) |
+| `md-editor:papelera` | `[{ ...doc, borrado: ts }]` — papelera (máx. 10) |
+| `md-editor:idioma` | `'es'` \| `'en'` — idioma elegido (si no, `navigator.language`) |
 | `md-editor:tema` | `'light'` \| `'dark'` |
 | `md-editor:esquema` | `'1'` \| `'0'` — esquema visible |
 | `md-editor:modo` | `'editor'` \| `'split'` \| `'preview'` — modo de vista |
@@ -185,6 +192,28 @@ Sigue el patrón existente: elemento con `id`, clase de estilo existente o nueva
 en `style.css`, y en `app.js` un `document.getElementById(...)` cerca de la
 sección relacionada. Cierra con `Esc` añadiendo una rama en la sección 8.
 
+### 5.6 Añadir un texto nuevo (español / inglés)
+
+1. En **`js/i18n.js`** añade una fila con las tres tripas — clave, español,
+   inglés — en el grupo que corresponda:
+   ```js
+   ['msg.micosa', '🟢 Cosita nueva', '🟢 New thing'],
+   ```
+   Claves en minúsculas con puntos (`grupo.subclave`) y **siempre las dos
+   traducciones en la misma línea**: así `check.js` puede exigir la paridad.
+2. Si el texto vive en el **HTML**, marca el elemento:
+   `data-i18n="msg.micosa"` (contenido), `data-i18n-title=` (título y
+   `aria-label`), `data-i18n-ph=` (placeholder) o `data-i18n-html=` (si lleva
+   etiquetas).
+3. Si el texto se calcula en **JS**, usa `t('msg.micosa')` o con parámetros:
+   `t('msg.micosa', { n: 3 })` con `{n}` en la cadena.
+4. Ejecuta `node scripts/check.js`: te dirá si la clave no existe en el
+   diccionario o si sobra.
+
+No hace falta registrar nada más: `aplicarIdioma()` recorre todos los
+`data-i18n*` de la página y repinta además la lista de documentos, la papelera,
+el esquema, las estadísticas y el indicador de guardado.
+
 ---
 
 ## 6. Sistemas con "trucos" que conviene conocer
@@ -233,6 +262,45 @@ Ese mismo array da el contador `n/total` y el «dar la vuelta» al final.
 - `crearDesdePlantilla()` hace lo mismo que `nuevo()` pero con contenido, y
   llama a `persistir(true)` para que la plantilla aparezca ya en la biblioteca.
 
+### Multi-idioma (sección 0 + `js/i18n.js`)
+
+- El diccionario son **filas de tripas** `[clave, español, inglés]` que se
+  convierten en `window.I18N = { es: {…}, en: {…} }`; `js/i18n.js` se carga
+  **antes** que `app.js` en el HTML.
+- `t(clave, params)` traduce sustituyendo `{param}`; si falta una clave, se
+  muestra la propia clave (se ve al momento en pantalla, no se rompe nada).
+- `aplicarIdioma()` hace el volcado completo: textos `data-i18n*`, `<html lang>`,
+  `<title>`, contador de la papelera, lista de documentos, esquema, estadísticas,
+  indicador de guardado y el botón/señuelo del idioma (`🇬🇧 EN` ↔ `🇪🇸 ES`).
+- El idioma se guarda en `md-editor:idioma`; sin elección previa se detecta con
+  `navigator.language` y se **guarda** el resultado (para que no cambie si el
+  sistema cambia de idioma).
+
+### Papelera (secciones 1 y 2 + 10g)
+
+- `borrarDoc()` ya no borra: hace `papelera.unshift({...doc, borrado: Date.now()})`
+  y recorta con `slice(0, PAPELERA_MAX)` (10). Los más antiguos se descartan.
+- La lista del modal cambia de modo con `vistaPapelera` y `#btnTrash`; los
+  botones ♻️/❌ se pintan en `pintaPapelera()` con `restaurarDoc(i)` y
+  `borrarDefinitivo(i)`, siempre con `confirm()`.
+- `restaurarDoc()` **regenera el `id`** si ya existe un documento con ese id en
+  la biblioteca, para no pisar nada.
+- Al restaurar, la papelera se recorta otra vez a 10 por si el `localStorage`
+  venía de una versión anterior.
+
+### `.zip` sin librerías (sección 10f)
+
+- `crearZip()` escribe el formato ZIP a mano con el método **store** (sin
+  comprimir): cabeceras locales (`0x04034b50`), directorio central
+  (`0x02014b50`) y fin de archivo (`0x06054b50`), todo con bandera
+  `0x0800` (*UTF-8* en los nombres).
+- `crc32()` usa una tabla de 256 entradas (`CRC_TABLA`) calculada una vez con el
+  polinomio `0xEDB88320`; es la misma comprobación que exigen los descomprimidores.
+- Todo son `Uint8Array` y un `Blob`, así que el archivo **no se materializa** en
+  memoria hasta que el navegador lo baja con `descargarComo()`.
+- `exportarZip()` ordena por fecha, limpia caracteres prohibidos
+  (`\ / : * ? " < > |`) y añade ` (2)`, ` (3)`… si se repite el nombre.
+
 ---
 
 ## 7. Seguridad
@@ -270,6 +338,12 @@ Ese mismo array da el contador `n/total` y el «dar la vuelta» al final.
 [ ] ⚙️ Ajustes → cambiar fuente/tamaño/ancho y recargar (se recuerdan)
 [ ] ＋ Nuevo → plantillas (README, tareas…) crean documento en la biblioteca
 [ ] 📚 Mis docs → ⬇️ Respaldo → ⬆️ Restaurar en limpio
+[ ] 📚 Mis docs → 📦 ZIP → el .zip abre y contiene todos los .md
+[ ] 🗑️ Borrar un documento → va a la papelera → ♻️ lo restaura
+[ ] 🗑️ ❌ borrar para siempre / Vaciar → avisan que no se puede recuperar
+[ ] 🌍 EN: toda la interfaz traducida (sin textos en español sueltos) y al
+    volver a ES se restaura todo; recargar mantiene el idioma elegido
+[ ] `node scripts/check.js` en verde (incluye la comprobación de i18n)
 [ ] Arrastrar un .md a la ventana → se abre
 [ ] Ventana estrecha (< 760 px): las columnas se apilan
 [ ] Ctrl+P: el PDF sale sin barra ni editor
@@ -286,8 +360,8 @@ request** y pone la build en verde o roja antes de que llegues a la web rota.
 
 | Paso | Herramienta | Qué valida |
 |---|---|---|
-| Sintaxis | `node --check js/app.js` | Que JavaScript no tenga errores de sintaxis |
-| Estructura | `node scripts/check.js` | Las 9 comprobaciones de abajo |
+| Sintaxis | `node --check js/app.js` + `node --check js/i18n.js` | Que JavaScript no tenga errores de sintaxis |
+| Estructura | `node scripts/check.js` | Las 10 comprobaciones de abajo |
 | Servidor | `python3 -m http.server` + `curl` | Que `index.html`, CSS, JS e iconos responden |
 | Artefacto | `upload-artifact` | Sube el proyecto compilado por si quieres descargarlo |
 
@@ -303,6 +377,9 @@ local con `node scripts/check.js`):
 7. Que todas las **variables CSS** usadas estén definidas
 8. **Metadatos**: `lang`, `title`, charset, viewport, descripción, favicon, `og:title`
 9. Que los **enlaces relativos** de README y `docs/` no estén rotos
+10. **i18n**: sintaxis de `js/i18n.js`, **paridad es↔en** de todas las claves,
+    que cada clave de los atributos `data-i18n*` del HTML y de cada `t('…')` de
+    `app.js` exista en el diccionario, y aviso de las claves que no usa nadie
 
 Sale con **código 1** si algo falla → el paso del workflow se pone rojo.
 
@@ -317,12 +394,15 @@ usando `ok()` / `mal()` / `aviso()` y ya se ejecuta solo en cada push.
 
 ## 11. Ideas para el futuro
 
-- Exportar todos los documentos de la biblioteca a un `.zip`.
+- Más idiomas (portugués, francés…) — solo hace falta añadir una columna al
+  diccionario y una rama en `cargarIdioma()`.
+- Historial de versiones por documento (varios guardados, volver atrás días después).
 - Sincronización opcional (GitHub Gist, WebDAV) para no depender del navegador.
 - Resaltado de sintaxis dentro del editor (overlay).
-- Historial de versiones por documento (varios guardados, volver atrás días después).
 - PWA instalable y offline (manifest + service worker + iconos PNG).
 - Pruebas automáticas con Playwright sobre el checklist del apartado 9.
+- Comprimir el `.zip` (método *deflate*) para bibliotecas grandes: ahora es
+  *store* a propósito, para poder escribirlo sin librerías.
 
 ---
 

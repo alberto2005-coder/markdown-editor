@@ -20,17 +20,18 @@
 <header class="bar">
   <div class="brand"><img src="assets/icon.svg" alt="" class="logo" /> <strong>Markdown</strong> Editor</div>
 
-  <input id="fileName" class="file-name" type="text" value="documento" spellcheck="false" title="Nombre del documento" />
+  <input id="fileName" class="file-name" type="text" value="documento" spellcheck="false" title="Nombre del documento" data-i18n-title="fn.title" />
 
   <div class="actions">
-    <button id="btnNew" title="Nuevo documento (Ctrl+N)">＋ Nuevo</button>
-    <button id="btnOpen" title="Abrir un archivo .md del disco (Ctrl+O)">📂 Abrir</button>
-    <button id="btnSave" title="Guardar en Mis documentos y descargar el .md (Ctrl+S)">💾 Guardar</button>
-    <button id="btnDocs" title="Documentos guardados en este navegador">📚 Mis docs</button>
-    <button id="btnExport" title="Exportar y compartir">📤 Exportar ▾</button>
-    <button id="btnSettings" title="Ajustes de edición: fuente, tamaño y ancho">⚙️ Ajustes</button>
-    <button id="btnHelp" title="Guía rápida de Markdown y atajos">❓ Guía</button>
-    <button id="btnTheme" title="Cambiar tema" aria-label="Cambiar entre tema claro y oscuro">🌙</button>
+    <button id="btnNew" title="Nuevo documento (Ctrl+N)" data-i18n="nav.new" data-i18n-title="nav.new.t">＋ Nuevo</button>
+    <button id="btnOpen" title="Abrir un archivo .md del disco (Ctrl+O)" data-i18n="nav.open" data-i18n-title="nav.open.t">📂 Abrir</button>
+    <button id="btnSave" title="Guardar en Mis documentos y descargar el .md (Ctrl+S)" data-i18n="nav.save" data-i18n-title="nav.save.t">💾 Guardar</button>
+    <button id="btnDocs" title="Documentos guardados en este navegador" data-i18n="nav.docs" data-i18n-title="nav.docs.t">📚 Mis docs</button>
+    <button id="btnExport" title="Exportar y compartir" data-i18n="nav.export" data-i18n-title="nav.export.t">📤 Exportar ▾</button>
+    <button id="btnSettings" title="Ajustes de edición: fuente, tamaño y ancho" data-i18n="nav.settings" data-i18n-title="nav.settings.t">⚙️ Ajustes</button>
+    <button id="btnHelp" title="Guía rápida de Markdown y atajos" data-i18n="nav.help" data-i18n-title="nav.help.t">❓ Guía</button>
+    <button id="btnIdioma" title="Cambiar idioma / Switch language" data-i18n-title="nav.lang.t">🇬🇧 EN</button>
+    <button id="btnTheme" title="Cambiar tema" aria-label="Cambiar entre tema claro y oscuro" data-i18n-title="nav.theme.t">🌙</button>
   </div>
 
   <input type="file" id="fileInput" accept=".md,.markdown,.mdown,.txt,text/markdown,text/plain" hidden />
@@ -39,71 +40,71 @@
 
 <!-- menú: plantillas al crear un documento -->
 <div class="menu-pop" id="plantillasPop" hidden>
-  <div class="pop-subtitle">📄 Nueva plantilla</div>
-  <button data-tpl="blanco">📄 Documento en blanco</button>
-  <button data-tpl="apuntes">📝 Apuntes de clase</button>
-  <button data-tpl="readme">📁 README de proyecto</button>
-  <button data-tpl="informe">📊 Informe</button>
-  <button data-tpl="tareas">✅ Lista de tareas</button>
+  <div class="pop-subtitle" data-i18n="tpl.sub">📄 Nueva plantilla</div>
+  <button data-tpl="blanco" data-i18n="tpl.blanco">📄 Documento en blanco</button>
+  <button data-tpl="apuntes" data-i18n="tpl.apuntes">📝 Apuntes de clase</button>
+  <button data-tpl="readme" data-i18n="tpl.readme">📁 README de proyecto</button>
+  <button data-tpl="informe" data-i18n="tpl.informe">📊 Informe</button>
+  <button data-tpl="tareas" data-i18n="tpl.tareas">✅ Lista de tareas</button>
 </div>
 
 <!-- menú: exportar y compartir -->
 <div class="menu-pop" id="exportPop" hidden>
-  <button data-exp="md">⬇️ Descargar archivo .md</button>
-  <button data-exp="html">🌐 Exportar como página HTML</button>
-  <button data-exp="pdf">🖨️ Imprimir / guardar PDF</button>
-  <button data-exp="copy">📋 Copiar Markdown</button>
-  <button data-exp="share">🔗 Copiar enlace para compartir</button>
+  <button data-exp="md" data-i18n="exp.md">⬇️ Descargar archivo .md</button>
+  <button data-exp="html" data-i18n="exp.html">🌐 Exportar como página HTML</button>
+  <button data-exp="pdf" data-i18n="exp.pdf">🖨️ Imprimir / guardar PDF</button>
+  <button data-exp="copy" data-i18n="exp.copy">📋 Copiar Markdown</button>
+  <button data-exp="share" data-i18n="exp.share">🔗 Copiar enlace para compartir</button>
 </div>
 
 <!-- ================= BARRA DE FORMATO ================= -->
 <div class="toolbar" id="toolbar">
-  <button data-hist="undo" id="btnUndo" title="Deshacer (Ctrl+Z)">↶ Deshacer</button>
-  <button data-hist="redo" id="btnRedo" title="Rehacer (Ctrl+Y o Ctrl+Shift+Z)">↷ Rehacer</button>
+  <button data-hist="undo" id="btnUndo" title="Deshacer (Ctrl+Z)" data-i18n="tb.undo" data-i18n-title="tb.undo.t">↶ Deshacer</button>
+  <button data-hist="redo" id="btnRedo" title="Rehacer (Ctrl+Y o Ctrl+Shift+Z)" data-i18n="tb.redo" data-i18n-title="tb.redo.t">↷ Rehacer</button>
   <span class="sep"></span>
-  <button data-cmd="h1" title="Título 1">H1</button>
-  <button data-cmd="h2" title="Título 2">H2</button>
-  <button data-cmd="h3" title="Título 3">H3</button>
+  <button data-cmd="h1" title="Título 1" data-i18n-title="tb.h1.t">H1</button>
+  <button data-cmd="h2" title="Título 2" data-i18n-title="tb.h2.t">H2</button>
+  <button data-cmd="h3" title="Título 3" data-i18n-title="tb.h3.t">H3</button>
   <span class="sep"></span>
-  <button data-cmd="bold" title="Negrita (Ctrl+B)"><b>B</b></button>
-  <button data-cmd="italic" title="Cursiva (Ctrl+I)"><i>I</i></button>
-  <button data-cmd="strike" title="Tachado"><s>S</s></button>
-  <button data-cmd="code" title="Código inline">&lt;/&gt;</button>
+  <button data-cmd="bold" title="Negrita (Ctrl+B)" data-i18n-title="tb.bold.t"><b>B</b></button>
+  <button data-cmd="italic" title="Cursiva (Ctrl+I)" data-i18n-title="tb.italic.t"><i>I</i></button>
+  <button data-cmd="strike" title="Tachado" data-i18n-title="tb.strike.t"><s>S</s></button>
+  <button data-cmd="code" title="Código inline" data-i18n-title="tb.code.t">&lt;/&gt;</button>
   <span class="sep"></span>
-  <button data-cmd="ul" title="Lista con viñetas">• Lista</button>
-  <button data-cmd="ol" title="Lista numerada">1. Numerada</button>
-  <button data-cmd="check" title="Lista de tareas">☑ Tareas</button>
-  <button data-cmd="quote" title="Cita">❝ Cita</button>
+  <button data-cmd="ul" title="Lista con viñetas" data-i18n="tb.ul" data-i18n-title="tb.ul.t">• Lista</button>
+  <button data-cmd="ol" title="Lista numerada" data-i18n="tb.ol" data-i18n-title="tb.ol.t">1. Numerada</button>
+  <button data-cmd="check" title="Lista de tareas" data-i18n="tb.check" data-i18n-title="tb.check.t">☑ Tareas</button>
+  <button data-cmd="quote" title="Cita" data-i18n="tb.quote" data-i18n-title="tb.quote.t">❝ Cita</button>
   <span class="sep"></span>
-  <button data-cmd="link" title="Enlace (Ctrl+K)">🔗 Enlace</button>
-  <button data-cmd="image" title="Imagen">🖼 Imagen</button>
-  <button data-cmd="table" id="btnTable" title="Tabla: elige el tamaño como en Word">📊 Tabla ▾</button>
-  <button data-cmd="codeblock" title="Bloque de código">{ } Bloque</button>
-  <button data-cmd="hr" title="Línea horizontal">─ Regla</button>
+  <button data-cmd="link" title="Enlace (Ctrl+K)" data-i18n="tb.link" data-i18n-title="tb.link.t">🔗 Enlace</button>
+  <button data-cmd="image" title="Imagen" data-i18n="tb.image" data-i18n-title="tb.image.t">🖼 Imagen</button>
+  <button data-cmd="table" id="btnTable" title="Tabla: elige el tamaño como en Word" data-i18n="tb.table" data-i18n-title="tb.table.t">📊 Tabla ▾</button>
+  <button data-cmd="codeblock" title="Bloque de código" data-i18n="tb.codeblock" data-i18n-title="tb.codeblock.t">{ } Bloque</button>
+  <button data-cmd="hr" title="Línea horizontal" data-i18n="tb.hr" data-i18n-title="tb.hr.t">─ Regla</button>
   <span class="sep"></span>
-  <button id="btnBuscar" title="Buscar y reemplazar (Ctrl+F)">🔍 Buscar</button>
-  <div class="modos" role="group" aria-label="Modo de vista">
-    <button data-modo="editor" title="Solo editor">✍️</button>
-    <button data-modo="split" title="Pantalla dividida (por defecto)">◫</button>
-    <button data-modo="preview" title="Solo vista previa">👀</button>
+  <button id="btnBuscar" title="Buscar y reemplazar (Ctrl+F)" data-i18n="tb.search" data-i18n-title="tb.search.t">🔍 Buscar</button>
+  <div class="modos" role="group" aria-label="Modo de vista" data-i18n-title="tb.modes">
+    <button data-modo="editor" title="Solo editor" data-i18n-title="tb.m.editor">✍️</button>
+    <button data-modo="split" title="Pantalla dividida (por defecto)" data-i18n-title="tb.m.split">◫</button>
+    <button data-modo="preview" title="Solo vista previa" data-i18n-title="tb.m.preview">👀</button>
   </div>
 </div>
 
 <!-- buscar y reemplazar -->
 <div class="buscar" id="buscarPanel" hidden>
-  <input type="text" id="buscarTxt" placeholder="Buscar…" spellcheck="false" autocomplete="off" />
-  <button id="btnCase" class="mini" title="Distinguir mayúsculas y minúsculas">Aa</button>
+  <input type="text" id="buscarTxt" placeholder="Buscar…" spellcheck="false" autocomplete="off" data-i18n-ph="find.ph" />
+  <button id="btnCase" class="mini" title="Distinguir mayúsculas y minúsculas" data-i18n-title="find.case.t">Aa</button>
   <span class="buscar-count" id="buscarCount">0/0</span>
-  <input type="text" id="reemplazarTxt" placeholder="Reemplazar por…" spellcheck="false" autocomplete="off" />
-  <button id="btnNext" class="mini" title="Siguiente coincidencia (Enter)">Siguiente ↓</button>
-  <button id="btnReplace" class="mini" title="Reemplazar la coincidencia actual">Reemplazar</button>
-  <button id="btnReplaceAll" class="mini" title="Reemplazar todas">Todo</button>
-  <button id="btnCloseBuscar" class="mini" aria-label="Cerrar la búsqueda">✕</button>
+  <input type="text" id="reemplazarTxt" placeholder="Reemplazar por…" spellcheck="false" autocomplete="off" data-i18n-ph="find.rph" />
+  <button id="btnNext" class="mini" title="Siguiente coincidencia (Enter)" data-i18n="find.next" data-i18n-title="find.next.t">Siguiente ↓</button>
+  <button id="btnReplace" class="mini" title="Reemplazar la coincidencia actual" data-i18n="find.replace" data-i18n-title="find.replace.t">Reemplazar</button>
+  <button id="btnReplaceAll" class="mini" title="Reemplazar todas" data-i18n="find.all" data-i18n-title="find.all.t">Todo</button>
+  <button id="btnCloseBuscar" class="mini" aria-label="Cerrar la búsqueda" data-i18n-title="find.close.a">✕</button>
 </div>
 
 <!-- selector de tamaño de tabla (estilo Word) -->
 <div class="table-pop" id="tablePop" hidden>
-  <div class="pop-title">Insertar tabla — columnas × filas</div>
+  <div class="pop-title" data-i18n="tbl.title">Insertar tabla — columnas × filas</div>
   <div class="table-grid" id="tableGrid"></div>
   <div class="pop-size" id="tableSize">4 × 3</div>
 </div>
@@ -114,12 +115,12 @@
   <!-- ZONA 1: EDITOR -->
   <section class="pane editor-pane">
     <div class="pane-title">✍️ Markdown <span id="stats">0 palabras</span></div>
-    <textarea id="editor" spellcheck="true" placeholder="Escribe tu Markdown aquí..."></textarea>
+    <textarea id="editor" spellcheck="true" placeholder="Escribe tu Markdown aquí..." data-i18n-ph="pane.ph"></textarea>
   </section>
 
   <!-- ESQUEMA / ÍNDICE DE TÍTULOS -->
   <aside class="outline" id="outlinePane">
-    <div class="pane-title">📑 Esquema</div>
+    <div class="pane-title" data-i18n="pane.outline">📑 Esquema</div>
     <nav id="outlineList" class="outline-list">
       <p class="outline-empty">Añade títulos con <code>#</code> y aparecerán aquí.</p>
     </nav>
@@ -128,8 +129,8 @@
   <!-- ZONA 2: VISTA EN VIVO -->
   <section class="pane preview-pane">
     <div class="pane-title">
-      👀 Vista previa
-      <button id="btnOutline" class="mini" title="Mostrar u ocultar el esquema">☰ Esquema</button>
+      <span data-i18n="pane.preview">👀 Vista previa</span>
+      <button id="btnOutline" class="mini" title="Mostrar u ocultar el esquema" data-i18n="pane.btnoutline" data-i18n-title="pane.btnoutline.t">☰ Esquema</button>
     </div>
     <article id="preview" class="markdown-body"></article>
   </section>
@@ -140,25 +141,28 @@
 <footer class="bar bottom">
   <span id="status">Listo</span>
   <span id="saveInfo" class="save-info">Sin cambios</span>
-  <span class="hint">Ctrl+N nuevo · Ctrl+O abrir · Ctrl+S guardar · Ctrl+B / Ctrl+I negrita y cursiva · Ctrl+K enlace · Ctrl+Z / Ctrl+Y deshacer y rehacer · Ctrl+V pegar imagen</span>
-  <span class="credito">© 2026 <a href="https://github.com/alberto2005-coder" target="_blank" rel="noopener">Alberto Ortiz</a> · Uso no comercial</span>
+  <span class="hint" data-i18n="foot.hints">Ctrl+N nuevo · Ctrl+O abrir · Ctrl+S guardar · Ctrl+B / Ctrl+I negrita y cursiva · Ctrl+K enlace · Ctrl+Z / Ctrl+Y deshacer y rehacer · Ctrl+V pegar imagen</span>
+  <span class="credito" data-i18n-html="foot.credit">© 2026 <a href="https://github.com/alberto2005-coder" target="_blank" rel="noopener">Alberto Ortiz</a> · Uso no comercial</span>
 </footer>
 
 <!-- ================= MODAL: MIS DOCUMENTOS ================= -->
 <div class="modal" id="docsModal" role="dialog" aria-modal="true" aria-labelledby="tituloDocs" hidden>
   <div class="modal-card">
     <div class="modal-head">
-      <h2 id="tituloDocs">📚 Mis documentos</h2>
-      <button id="btnCloseDocs" class="mini" title="Cerrar" aria-label="Cerrar la ventana de documentos">✕</button>
+      <h2 id="tituloDocs" data-i18n="docs.title">📚 Mis documentos</h2>
+      <button id="btnCloseDocs" class="mini" title="Cerrar" aria-label="Cerrar la ventana de documentos" data-i18n-title="docs.close.t">✕</button>
     </div>
     <div class="modal-actions">
-      <button id="btnNewDoc">＋ Nuevo documento</button>
-      <button id="btnBackup" title="Descargar todos los documentos en un solo archivo">⬇️ Respaldo</button>
-      <button id="btnRestore" title="Cargar un respaldo .json">⬆️ Restaurar</button>
-      <span class="modal-note">Se guardan automáticamente en este navegador.</span>
+      <button id="btnNewDoc" data-i18n="docs.new">＋ Nuevo documento</button>
+      <button id="btnTrash" title="Papelera: los documentos borrados" data-i18n-title="docs.trash">🗑️ Papelera</button>
+      <button id="btnVaciar" title="Borrar todos los documentos de la papelera" data-i18n="docs.vaciar" data-i18n-title="docs.vaciar" hidden>🗑️ Vaciar papelera</button>
+      <button id="btnBackup" title="Descargar todos los documentos en un solo archivo" data-i18n="docs.backup" data-i18n-title="docs.backup.t">⬇️ Respaldo</button>
+      <button id="btnZip" title="Descargar todos los .md en un archivo .zip" data-i18n="docs.zip" data-i18n-title="docs.zip.t">📦 ZIP</button>
+      <button id="btnRestore" title="Cargar un respaldo .json" data-i18n="docs.restore" data-i18n-title="docs.restore.t">⬆️ Restaurar</button>
+      <span class="modal-note" data-i18n="docs.note1">Se guardan automáticamente en este navegador.</span>
     </div>
     <div id="docsList" class="docs-list"></div>
-    <p class="modal-note">Usa <strong>💾 Guardar</strong> para descargar también el archivo <code>.md</code> a tu PC.</p>
+    <p class="modal-note" data-i18n-html="docs.note2">Usa <strong>💾 Guardar</strong> para descargar también el archivo <code>.md</code> a tu PC.</p>
   </div>
 </div>
 
@@ -166,50 +170,58 @@
 <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="tituloAjustes" hidden>
   <div class="modal-card modal-ajustes">
     <div class="modal-head">
-      <h2 id="tituloAjustes">⚙️ Ajustes de edición</h2>
-      <button id="btnCloseSettings" class="mini" title="Cerrar" aria-label="Cerrar los ajustes">✕</button>
+      <h2 id="tituloAjustes" data-i18n="set.title">⚙️ Ajustes de edición</h2>
+      <button id="btnCloseSettings" class="mini" title="Cerrar" aria-label="Cerrar los ajustes" data-i18n-title="set.close.t">✕</button>
     </div>
     <div class="ajustes-body">
 
       <label class="ajuste">
-        <span>Fuente del editor</span>
+        <span data-i18n="set.font">Fuente del editor</span>
         <select id="ajFuente">
-          <option value="mono">Monoespaciada (código)</option>
-          <option value="sans">Sans serif (normal)</option>
-          <option value="serif">Serif (clásica)</option>
+          <option value="mono" data-i18n="set.font.mono">Monoespaciada (código)</option>
+          <option value="sans" data-i18n="set.font.sans">Sans serif (normal)</option>
+          <option value="serif" data-i18n="set.font.serif">Serif (clásica)</option>
         </select>
       </label>
 
       <label class="ajuste">
-        <span>Tamaño del editor <b id="valEd">14,5 px</b></span>
+        <span><span data-i18n="set.edsize">Tamaño del editor</span> <b id="valEd">14,5 px</b></span>
         <input type="range" id="ajEdSize" min="12" max="22" step="0.5" />
       </label>
 
       <label class="ajuste">
-        <span>Tamaño de la vista previa <b id="valPv">15,5 px</b></span>
+        <span><span data-i18n="set.pvsize">Tamaño de la vista previa</span> <b id="valPv">15,5 px</b></span>
         <input type="range" id="ajPvSize" min="13" max="24" step="0.5" />
       </label>
 
       <label class="ajuste">
-        <span>Ancho de lectura</span>
+        <span data-i18n="set.width">Ancho de lectura</span>
         <select id="ajAncho">
-          <option value="620px">Estrecho (lectura cómoda)</option>
-          <option value="780px">Normal</option>
-          <option value="none">Ancho completo</option>
+          <option value="620px" data-i18n="set.w.narrow">Estrecho (lectura cómoda)</option>
+          <option value="780px" data-i18n="set.w.normal">Normal</option>
+          <option value="none" data-i18n="set.w.full">Ancho completo</option>
         </select>
       </label>
 
       <label class="ajuste">
-        <span>Tema</span>
+        <span data-i18n="set.theme">Tema</span>
         <select id="ajTema">
-          <option value="light">Claro</option>
-          <option value="dark">Oscuro</option>
+          <option value="light" data-i18n="set.light">Claro</option>
+          <option value="dark" data-i18n="set.dark">Oscuro</option>
+        </select>
+      </label>
+
+      <label class="ajuste">
+        <span data-i18n="set.lang">Idioma</span>
+        <select id="ajIdioma">
+          <option value="es">🇪🇸 Español</option>
+          <option value="en">🇬🇧 English</option>
         </select>
       </label>
 
       <div class="ajuste-botones">
-        <button id="btnResetAjustes">↺ Restablecer valores</button>
-        <span class="modal-note">Se guardan en este navegador.</span>
+        <button id="btnResetAjustes" data-i18n="set.reset">↺ Restablecer valores</button>
+        <span class="modal-note" data-i18n="set.note">Se guardan en este navegador.</span>
       </div>
 
     </div>
@@ -218,96 +230,96 @@
 
 <!-- ================= ZONA DE SOLTAR ARCHIVOS ================= -->
 <div class="drop-zone" id="dropZone" hidden>
-  <div class="drop-card">📂 Suelta aquí tu archivo <b>.md</b> o una imagen</div>
+  <div class="drop-card" data-i18n-html="drop.msg">📂 Suelta aquí tu archivo <b>.md</b> o una imagen</div>
 </div>
 
 <!-- ================= MODAL: GUÍA DE MARKDOWN ================= -->
 <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="tituloGuia" hidden>
   <div class="modal-card">
     <div class="modal-head">
-      <h2 id="tituloGuia">❓ Guía rápida de Markdown</h2>
-      <button id="btnCloseHelp" class="mini" title="Cerrar" aria-label="Cerrar la guía">✕</button>
+      <h2 id="tituloGuia" data-i18n="help.title">❓ Guía rápida de Markdown</h2>
+      <button id="btnCloseHelp" class="mini" title="Cerrar" aria-label="Cerrar la guía" data-i18n-title="help.close.t">✕</button>
     </div>
     <div class="guide-body">
 
       <div class="guide-group">
-        <h3>Títulos</h3>
-        <div class="guide-row"><code># Título 1</code><span class="vista vista-h1">Título 1</span></div>
-        <div class="guide-row"><code>## Título 2</code><span class="vista vista-h2">Título 2</span></div>
-        <div class="guide-row"><code>### Título 3</code><span class="vista vista-h3">Título 3</span></div>
+        <h3 data-i18n="gu.g.titles">Títulos</h3>
+        <div class="guide-row"><code data-i18n="gu.t1c"># Título 1</code><span class="vista vista-h1" data-i18n="gu.t1v">Título 1</span></div>
+        <div class="guide-row"><code data-i18n="gu.t2c">## Título 2</code><span class="vista vista-h2" data-i18n="gu.t2v">Título 2</span></div>
+        <div class="guide-row"><code data-i18n="gu.t3c">### Título 3</code><span class="vista vista-h3" data-i18n="gu.t3v">Título 3</span></div>
       </div>
 
       <div class="guide-group">
-        <h3>Énfasis</h3>
-        <div class="guide-row"><code>**negrita**</code><span class="vista"><b>negrita</b></span></div>
-        <div class="guide-row"><code>*cursiva*</code><span class="vista"><i>cursiva</i></span></div>
-        <div class="guide-row"><code>~~tachado~~</code><span class="vista"><s>tachado</s></span></div>
-        <div class="guide-row"><code>`código`</code><span class="vista"><code>código</code></span></div>
+        <h3 data-i18n="gu.g.emph">Énfasis</h3>
+        <div class="guide-row"><code data-i18n="gu.boldc">**negrita**</code><span class="vista"><b data-i18n="gu.boldv">negrita</b></span></div>
+        <div class="guide-row"><code data-i18n="gu.italc">*cursiva*</code><span class="vista"><i data-i18n="gu.italv">cursiva</i></span></div>
+        <div class="guide-row"><code data-i18n="gu.strc">~~tachado~~</code><span class="vista"><s data-i18n="gu.strv">tachado</s></span></div>
+        <div class="guide-row"><code data-i18n="gu.codec">`código`</code><span class="vista"><code data-i18n="gu.codev">código</code></span></div>
       </div>
 
       <div class="guide-group">
-        <h3>Código</h3>
-        <div class="guide-row"><code>&nbsp;&nbsp;&nbsp;&nbsp;código</code><span class="vista">sangría de 4 espacios</span></div>
-        <div class="guide-row"><code>```js<br>código<br>```</code>
+        <h3 data-i18n="gu.g.code">Código</h3>
+        <div class="guide-row"><code data-i18n-html="gu.indc">&nbsp;&nbsp;&nbsp;&nbsp;código</code><span class="vista" data-i18n="gu.indv">sangría de 4 espacios</span></div>
+        <div class="guide-row"><code data-i18n-html="gu.fencec">```js<br>código<br>```</code>
           <span class="vista"><code>var x = 1;</code></span>
         </div>
-        <p class="guide-nota">Para bloques largos usa <strong>{ } Bloque</strong> en la barra de formato.</p>
+        <p class="guide-nota" data-i18n-html="gu.codenote">Para bloques largos usa <strong>{ } Bloque</strong> en la barra de formato.</p>
       </div>
 
       <div class="guide-group">
-        <h3>Listas y citas</h3>
-        <div class="guide-row"><code>- elemento</code><span class="vista">• elemento</span></div>
-        <div class="guide-row"><code>1. paso</code><span class="vista">1. paso</span></div>
-        <div class="guide-row"><code>- [ ] tarea</code><span class="vista"><span class="fake-check">☐</span> tarea</span></div>
-        <div class="guide-row"><code>&gt; cita</code><span class="vista cita">cita</span></div>
+        <h3 data-i18n="gu.g.lists">Listas y citas</h3>
+        <div class="guide-row"><code data-i18n="gu.lic">- elemento</code><span class="vista" data-i18n="gu.liv">• elemento</span></div>
+        <div class="guide-row"><code data-i18n="gu.olic">1. paso</code><span class="vista" data-i18n="gu.oliv">1. paso</span></div>
+        <div class="guide-row"><code data-i18n="gu.taskc">- [ ] tarea</code><span class="vista" data-i18n-html="gu.taskv"><span class="fake-check">☐</span> tarea</span></div>
+        <div class="guide-row"><code data-i18n="gu.qc">&gt; cita</code><span class="vista cita" data-i18n="gu.qv">cita</span></div>
       </div>
 
       <div class="guide-group">
-        <h3>Enlaces, imágenes y regla</h3>
-        <div class="guide-row"><code>[texto](https://…)</code><span class="vista"><a href="#" onclick="return false">texto</a></span></div>
-        <div class="guide-row"><code>![alt](url)</code><span class="vista">🖼 imagen</span></div>
+        <h3 data-i18n="gu.g.links">Enlaces, imágenes y regla</h3>
+        <div class="guide-row"><code data-i18n="gu.linkc">[texto](https://…)</code><span class="vista"><a href="#" onclick="return false" data-i18n="gu.linkv">texto</a></span></div>
+        <div class="guide-row"><code data-i18n="gu.imgc">![alt](url)</code><span class="vista" data-i18n="gu.imgv">🖼 imagen</span></div>
         <div class="guide-row"><code>---</code><span class="vista"><hr /></span></div>
       </div>
 
       <div class="guide-group">
-        <h3>Tabla</h3>
+        <h3 data-i18n="gu.g.table">Tabla</h3>
         <div class="guide-row"><code>| a | b |<br>|---|---|<br>| 1 | 2 |</code>
           <span class="vista">
             <table class="mini-tabla"><tr><th>a</th><th>b</th></tr><tr><td>1</td><td>2</td></tr></table>
           </span>
         </div>
-        <p class="guide-nota">O pulsa <strong>📊 Tabla ▾</strong> y elige el tamaño en la rejilla, como en Word.</p>
+        <p class="guide-nota" data-i18n-html="gu.tblnote">O pulsa <strong>📊 Tabla ▾</strong> y elige el tamaño en la rejilla, como en Word.</p>
       </div>
 
       <div class="guide-group">
-        <h3>Atajos</h3>
-        <div class="guide-row"><code>Ctrl + S</code><span>Guardar (biblioteca + .md)</span></div>
-        <div class="guide-row"><code>Ctrl + Z</code><span>Deshacer</span></div>
-        <div class="guide-row"><code>Ctrl + Y</code><span>Rehacer (o Ctrl + Shift + Z)</span></div>
-        <div class="guide-row"><code>Ctrl + F</code><span>Buscar y reemplazar</span></div>
-        <div class="guide-row"><code>Ctrl + O</code><span>Abrir archivo</span></div>
-        <div class="guide-row"><code>Ctrl + N</code><span>Documento nuevo en blanco</span></div>
-        <div class="guide-row"><code>Ctrl + B</code><span>Negrita</span></div>
-        <div class="guide-row"><code>Ctrl + I</code><span>Cursiva</span></div>
-        <div class="guide-row"><code>Ctrl + K</code><span>Enlace</span></div>
-        <div class="guide-row"><code>Ctrl + V</code><span>Pegar imagen (se inserta sola)</span></div>
-        <div class="guide-row"><code>Ctrl + P</code><span>Imprimir / guardar como PDF</span></div>
-        <div class="guide-row"><code>Tab</code><span>Sangría de 2 espacios</span></div>
-        <div class="guide-row"><code>Enter</code><span>En la búsqueda: siguiente coincidencia</span></div>
-        <div class="guide-row"><code>Esc</code><span>Cerrar ventanas, menús o la búsqueda</span></div>
+        <h3 data-i18n="gu.g.keys">Atajos</h3>
+        <div class="guide-row"><code>Ctrl + S</code><span data-i18n="k.save">Guardar (biblioteca + .md)</span></div>
+        <div class="guide-row"><code>Ctrl + Z</code><span data-i18n="k.undo">Deshacer</span></div>
+        <div class="guide-row"><code>Ctrl + Y</code><span data-i18n="k.redo">Rehacer (o Ctrl + Shift + Z)</span></div>
+        <div class="guide-row"><code>Ctrl + F</code><span data-i18n="k.find">Buscar y reemplazar</span></div>
+        <div class="guide-row"><code>Ctrl + O</code><span data-i18n="k.open">Abrir archivo</span></div>
+        <div class="guide-row"><code>Ctrl + N</code><span data-i18n="k.new">Documento nuevo en blanco</span></div>
+        <div class="guide-row"><code>Ctrl + B</code><span data-i18n="k.bold">Negrita</span></div>
+        <div class="guide-row"><code>Ctrl + I</code><span data-i18n="k.italic">Cursiva</span></div>
+        <div class="guide-row"><code>Ctrl + K</code><span data-i18n="k.link">Enlace</span></div>
+        <div class="guide-row"><code>Ctrl + V</code><span data-i18n="k.paste">Pegar imagen (se inserta sola)</span></div>
+        <div class="guide-row"><code>Ctrl + P</code><span data-i18n="k.print">Imprimir / guardar como PDF</span></div>
+        <div class="guide-row"><code>Tab</code><span data-i18n="k.tab">Sangría de 2 espacios</span></div>
+        <div class="guide-row"><code>Enter</code><span data-i18n="k.enter">En la búsqueda: siguiente coincidencia</span></div>
+        <div class="guide-row"><code>Esc</code><span data-i18n="k.esc">Cerrar ventanas, menús o la búsqueda</span></div>
       </div>
 
       <div class="guide-group">
-        <h3>Todo lo demás que puedes hacer</h3>
-        <div class="guide-row"><code>🔍 Buscar</code><span>Barra con contador <b>n/total</b>, <b>Aa</b> (mayúsculas), <b>Siguiente</b>, <b>Reemplazar</b> y <b>Todo</b></span></div>
-        <div class="guide-row"><code>✍️ ◫ 👀</code><span>Modos de vista: solo editor, dividido o solo vista previa</span></div>
-        <div class="guide-row"><code>＋ Nuevo</code><span>Menú de plantillas: apuntes, README, informe, tareas o en blanco</span></div>
-        <div class="guide-row"><code>⚙️ Ajustes</code><span>Fuente, tamaño del editor y de la vista previa, ancho de lectura y tema</span></div>
-        <div class="guide-row"><code>⬇️ Respaldo</code><span>En <b>📚 Mis docs</b>: baja todo en un <b>.json</b> y lo restauras donde quieras</span></div>
-        <div class="guide-row"><code>📂 Arrastrar</code><span>Suelta un <b>.md</b> para abrirlo, o una imagen para insertarla</span></div>
-        <div class="guide-row"><code>📤 Exportar</code><span><b>.md</b>, página HTML con estilo, PDF e <b>enlace para compartir</b></span></div>
-        <div class="guide-row"><code>💾 Autoguardado</code><span>Se guarda solo a los 1,2 s; el pie indica el estado</span></div>
-        <p class="guide-nota">La biblioteca vive en <strong>este navegador</strong>: haz un respaldo de vez en cuando.</p>
+        <h3 data-i18n="gu.g.more">Todo lo demás que puedes hacer</h3>
+        <div class="guide-row"><code data-i18n="tb.search">🔍 Buscar</code><span data-i18n-html="m.search">Barra con contador <b>n/total</b></span></div>
+        <div class="guide-row"><code>✍️ ◫ 👀</code><span data-i18n="m.modes">Modos de vista: solo editor, dividido o solo vista previa</span></div>
+        <div class="guide-row"><code data-i18n="nav.new">＋ Nuevo</code><span data-i18n="m.new">Menú de plantillas: apuntes, README, informe, tareas o en blanco</span></div>
+        <div class="guide-row"><code data-i18n="nav.settings">⚙️ Ajustes</code><span data-i18n="m.settings">Fuente, tamaño del editor y de la vista previa, ancho de lectura y tema</span></div>
+        <div class="guide-row"><code data-i18n="docs.backup">⬇️ Respaldo</code><span data-i18n-html="m.backup">En <b>📚 Mis docs</b></span></div>
+        <div class="guide-row"><code data-i18n="m.dropLabel">📂 Arrastrar</code><span data-i18n="m.drop">Suelta un <b>.md</b> para abrirlo, o una imagen para insertarla</span></div>
+        <div class="guide-row"><code data-i18n="nav.export">📤 Exportar</code><span data-i18n-html="m.export"><b>.md</b></span></div>
+        <div class="guide-row"><code data-i18n="m.autosaveLabel">💾 Autoguardado</code><span data-i18n="m.autosave">Se guarda solo a los 1,2 s; el pie indica el estado</span></div>
+        <p class="guide-nota" data-i18n-html="m.note">La biblioteca vive en <strong>este navegador</strong></p>
       </div>
 
     </div>
@@ -316,6 +328,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.5/dist/purify.min.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

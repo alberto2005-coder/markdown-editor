@@ -13,11 +13,14 @@ autoguardado, deshacer/rehacer, exportación a HTML/PDF y compartir por enlace.
 ## ✨ Características
 
 - ✍️ **Vista previa en vivo** mientras escribes
+- 🌍 **Español / English** — cambia de idioma con un botón (⚙️ Ajustes también)
 - 🔍 **Buscar y reemplazar** (`Ctrl+F`) con contador de coincidencias
 - 🗂 **Modos de vista**: solo editor, pantalla dividida o solo vista previa
 - ⚙️ **Ajustes de edición**: fuente, tamaño del texto y ancho de lectura
 - 📄 **Plantillas** al crear: apuntes, README, informe o lista de tareas
 - 📚 **Mis documentos** — biblioteca en tu navegador: abrir, renombrar, borrar
+- 🗑️ **Papelera**: lo que borras se puede **restaurar** (o borrar para siempre)
+- 📦 **ZIP** — descarga toda la biblioteca en un solo `.zip` (sin librerías)
 - 💾 **Autoguardado** con indicador en el pie (nada de perder trabajo)
 - 🧳 **Respaldo** de toda la biblioteca a un `.json` y restauración
 - 🎛 **Barra de formato** — títulos, negrita, listas, tareas, citas, enlaces, tablas…
@@ -45,6 +48,7 @@ markdown-editor/
 │
 ├── css/style.css           ← diseño y variables de tema
 ├── js/app.js               ← toda la lógica
+├── js/i18n.js              ← diccionario de textos (español / inglés)
 ├── scripts/check.js        ← validador del proyecto (sin dependencias)
 ├── .github/workflows/ci.yml ← CI: comprueba todo en cada push
 │
@@ -109,7 +113,7 @@ Con Git, desde la carpeta:
 ```powershell
 git init
 git add .
-git commit -m "Markdown Editor 1.7.0"
+git commit -m "Markdown Editor 1.8.0"
 git branch -M main
 git remote add origin https://github.com/TU-USUARIO/markdown-editor.git
 git push -u origin main
@@ -121,9 +125,10 @@ git push -u origin main
 
 Cada *push* o *pull request* se comprueba solo (GitHub Actions):
 
-1. **Sintaxis** de `js/app.js`
+1. **Sintaxis** de `js/app.js` y `js/i18n.js`
 2. **`scripts/check.js`** → rutas rotas, `id` faltantes o duplicados, botones sin
-   `case`, variables CSS sin definir, metadatos y enlaces de la documentación
+   `case`, variables CSS sin definir, metadatos, enlaces de la documentación y
+   **coherencia del diccionario** (claves del HTML y de `app.js` en `i18n.js`)
 3. **Servido real**: que HTML, CSS, JS e iconos respondan
 4. **Artefacto** descargable con el proyecto
 

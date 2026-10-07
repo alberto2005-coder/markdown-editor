@@ -23,9 +23,11 @@ jobs:
           node-version: 20
 
       - name: 🔎 Sintaxis de JavaScript
-        run: node --check js/app.js
+        run: |
+          node --check js/app.js
+          node --check js/i18n.js
 
-      - name: 🧪 Estructura, rutas, ids y documentación
+      - name: 🧪 Estructura, rutas, ids, i18n y documentación
         run: node scripts/check.js
 
       - name: 🌐 El sitio se puede servir
@@ -35,6 +37,7 @@ jobs:
           curl -fsS http://127.0.0.1:8000/index.html     -o /dev/null
           curl -fsS http://127.0.0.1:8000/css/style.css   -o /dev/null
           curl -fsS http://127.0.0.1:8000/js/app.js       -o /dev/null
+          curl -fsS http://127.0.0.1:8000/js/i18n.js      -o /dev/null
           curl -fsS http://127.0.0.1:8000/assets/icon.svg -o /dev/null
           echo "Todas las rutas responden correctamente."
 
