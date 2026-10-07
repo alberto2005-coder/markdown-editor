@@ -33,7 +33,7 @@ markdown-editor/
 ├── .gitignore          Qué no subir a Git
 ├── .editorconfig       Estilo de edición uniforme
 ├── css/style.css       Estilos + variables de tema + print
-├── js/app.js           Toda la lógica (≈1580 líneas, secciones 0–11)
+├── js/app.js           Toda la lógica (≈1750 líneas, secciones 0–11)
 ├── js/i18n.js          Diccionario de textos (es / en) — se carga antes que app.js
 ├── scripts/check.js    Validador sin dependencias (lo usa el CI)
 ├── .github/workflows/ci.yml  CI: sintaxis, rutas, ids, i18n y servido
@@ -76,7 +76,8 @@ Busca `/* ======` o el número de sección.
 | **10f. ZIP** | `.zip` de toda la biblioteca, escrito a mano | `crc32(bytes)`, `crearZip([{nombre, texto}])`, `exportarZip()`, `CRC_TABLA` |
 | **10g. Papelera** | Mostrar / restaurar / borrar para siempre | `actualizaContadorPapelera()`, `#btnTrash`, `#btnVaciar`, `PAPELERA_MAX` |
 | **10h. Arrastrar** | Soltar `.md` o imagen | `traeArchivos(e)`, listeners `dragenter/over/leave/drop`, `#dropZone` |
-| **11. Inicio** | `iniciar()` (IIFE) | Idioma, tema, biblioteca, papelera, ajustes, modo, esquema y contenido |
+| **10i. Historial** | Copias automáticas por documento | `guardaVersionActual(forzar)`, `pintaVersiones()`, `restauraVersion(i)`, `borraVersion(i)`, `VERSIONES_MAX`, `md-editor:versiones` |
+| **11. Inicio** | `iniciar()` (IIFE) | Idioma, tema, biblioteca, papelera, versiones, ajustes, modo, esquema y contenido |
 
 ### Flujo de un cambio de texto
 
@@ -110,6 +111,7 @@ escribir en `localStorage` en cada pulsación.
 | `md-editor:docs` | `[{ id, name, content, updated }]` — biblioteca |
 | `md-editor:docId` | `id` del documento abierto (`''` si ninguno) |
 | `md-editor:papelera` | `[{ ...doc, borrado: ts }]` — papelera (máx. 10) |
+| `md-editor:versiones` | `{ [idDoc]: [{ ts, name, content }] }` — historial (máx. 20/doc) |
 | `md-editor:idioma` | `'es'` \| `'en'` — idioma elegido (si no, `navigator.language`) |
 | `md-editor:tema` | `'light'` \| `'dark'` |
 | `md-editor:esquema` | `'1'` \| `'0'` — esquema visible |
@@ -271,7 +273,7 @@ Ese mismo array da el contador `n/total` y el «dar la vuelta» al final.
   muestra la propia clave (se ve al momento en pantalla, no se rompe nada).
 - `aplicarIdioma()` hace el volcado completo: textos `data-i18n*`, `<html lang>`,
   `<title>`, contador de la papelera, lista de documentos, esquema, estadísticas,
-  indicador de guardado y el botón/señuelo del idioma (`🇬🇧 EN` ↔ `🇪🇸 ES`).
+  indicador de guardado y el botón/señuelo del idioma (`🌐 EN` ↔ `🌐 ES`).
 - El idioma se guarda en `md-editor:idioma`; sin elección previa se detecta con
   `navigator.language` y se **guarda** el resultado (para que no cambie si el
   sistema cambia de idioma).
@@ -287,6 +289,27 @@ Ese mismo array da el contador `n/total` y el «dar la vuelta» al final.
   la biblioteca, para no pisar nada.
 - Al restaurar, la papelera se recorta otra vez a 10 por si el `localStorage`
   venía de una versión anterior.
+
+### Historial de versiones (sección 10i)
+
+- `persistir()` llama a `guardaVersionActual(false)` en cada autoguardado: solo
+  copia si ha pasado **1 minuto** (`VERSIONES_MS`) desde la anterior y el
+  contenido cambió.
+- Al **cambiar de documento** (`abrirDoc()`, `nuevo()`, `crearDesdePlantilla()`)
+  se llama con `forzar = true`, para que el último estado no se quede sin copiar.
+- Máximo **20 copias** por documento (`VERSIONES_MAX`), guardadas **aparte** en
+  `md-editor:versiones` para no inflar `md-editor:docs`.
+- La vista es un **modo más del modal** de Mis docs (`vistaVersiones`), igual
+  que la papelera: `pintaListaDocs()` despacha a `pintaVersiones()`, y mientras
+  está activa `#btnTrash` pasa a ser "↩ Documentos" y se ocultan los botones de
+  acción (`actualizaBarraDocs()`).
+- Restaurar hace primero `persistir(true)` y `guardaVersionActual(true)`: lo
+  actual queda guardado como documento **y** como copia, y solo después se
+  aplica la versión elegida.
+- Si `localStorage` se llena, `escribirVersiones()` recorta a 3 copias por
+  documento y reintenta en lugar de perderlo todo.
+- Al borrar un documento para siempre (o al vaciar la papelera) se borran
+  también sus versiones con `borraVersiones(id)`.
 
 ### `.zip` sin librerías (sección 10f)
 
@@ -339,6 +362,7 @@ Ese mismo array da el contador `n/total` y el «dar la vuelta» al final.
 [ ] ＋ Nuevo → plantillas (README, tareas…) crean documento en la biblioteca
 [ ] 📚 Mis docs → ⬇️ Respaldo → ⬆️ Restaurar en limpio
 [ ] 📚 Mis docs → 📦 ZIP → el .zip abre y contiene todos los .md
+[ ] 📚 Mis docs → 🕘 → listar versiones → ♻️ restaurar una → sigue intacto
 [ ] 🗑️ Borrar un documento → va a la papelera → ♻️ lo restaura
 [ ] 🗑️ ❌ borrar para siempre / Vaciar → avisan que no se puede recuperar
 [ ] 🌍 EN: toda la interfaz traducida (sin textos en español sueltos) y al
@@ -396,7 +420,6 @@ usando `ok()` / `mal()` / `aviso()` y ya se ejecuta solo en cada push.
 
 - Más idiomas (portugués, francés…) — solo hace falta añadir una columna al
   diccionario y una rama en `cargarIdioma()`.
-- Historial de versiones por documento (varios guardados, volver atrás días después).
 - Sincronización opcional (GitHub Gist, WebDAV) para no depender del navegador.
 - Resaltado de sintaxis dentro del editor (overlay).
 - PWA instalable y offline (manifest + service worker + iconos PNG).

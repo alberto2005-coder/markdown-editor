@@ -42,11 +42,11 @@ rápido, con los tres primeros apartados te bastan.
 | **＋ Nuevo** | Abre el **menú de plantillas**: en blanco, apuntes, README, informe o tareas (el actual se guarda antes) | `Ctrl+N` (en blanco) |
 | **📂 Abrir** | Carga un `.md` que ya tengas en tu PC — o **arrástralo** a la ventana | `Ctrl+O` |
 | **💾 Guardar** | Guarda en la biblioteca **y** descarga el archivo `.md` | `Ctrl+S` |
-| **📚 Mis docs** | Ventana con todos tus documentos: abrir (clic), renombrar ✏️, borrar 🗑️ — y **papelera** para restaurar, **⬇️ Respaldo**, **📦 ZIP** y **⬆️ Restaurar** | — |
+| **📚 Mis docs** | Ventana con todos tus documentos: abrir (clic), **🕘 versiones**, renombrar ✏️, borrar 🗑️ — y **papelera** para restaurar, **⬇️ Respaldo**, **📦 ZIP** y **⬆️ Restaurar** | — |
 | **📤 Exportar ▾** | Menú: `.md`, HTML, PDF, copiar y **enlace para compartir** | — |
 | **⚙️ Ajustes** | Fuente, tamaño del editor, tamaño de la vista previa, ancho de lectura, tema e **idioma** | — |
 | **❓ Guía** | Guía rápida de sintaxis y atajos | — |
-| **🇬🇧 EN / 🇪🇸 ES** | Cambia **el idioma de toda la interfaz** (español ↔ inglés) al instante | — |
+| **🌐 EN / 🌐 ES** | Cambia **el idioma de toda la interfaz** (español ↔ inglés) al instante | — |
 | **🌙 / ☀️** | Tema oscuro / claro (se recuerda) | — |
 | **Nombre del documento** | Escribir ahí cambia el nombre del archivo | — |
 
@@ -127,8 +127,8 @@ todo de vuelta (los documentos existentes no se pisan, se añaden).
 ### 🌍 Cambiar el idioma (español ↔ inglés)
 Toda la interfaz está en los dos idiomas:
 
-1. Pulsa **🇬🇧 EN** en la barra superior para pasar a inglés (entonces dice
-   **🇪🇸 ES** para volver).
+1. Pulsa **🌐 EN** en la barra superior para pasar a inglés (entonces dice
+   **🌐 ES** para volver).
 2. También está en **⚙️ Ajustes → Idioma**.
 3. La elección se recuerda; si nunca has cambiado nada, se usa el idioma de tu
    navegador.
@@ -156,6 +156,23 @@ guardarlos como copia de seguridad legible.
 
 Si prefieres **un solo archivo** que además se puede *restaurar* dentro de la
 web, usa **⬇️ Respaldo** (`.json`): el `.zip` es para llevar los `.md` sueltos.
+
+### 🕘 Volver a una versión anterior
+Cada vez que guardas (y cada vez que cambias de documento) se guarda una **copia
+de seguridad automática**: como mucho **una por minuto** y hasta **20 por
+documento**.
+
+1. **📚 Mis docs** → en la fila del documento pulsa **🕘**.
+2. Se lista `🕘 Versiones de nombre.md` con la fecha y cuándo se guardó
+   (*hace 5 min*), con el número de palabras.
+3. Botones de cada versión:
+   - **♻️** devuelve el documento a ese momento. Lo que tienes ahora **se guarda
+     antes**, así que no pierdes nada ni de lo uno ni de lo otro.
+   - **🗑️** borra esa copia (te lo advierte: ya no se recupera).
+4. **↩ Documentos** vuelve a la lista normal.
+
+*Si pone «Todavía no hay versiones», es que llevas menos de un minuto en ese
+documento: espera un poco y vuelve.*
 
 ---
 
@@ -236,12 +253,16 @@ conexión hay un render básico de respaldo.
 **¿Puedo usarlo en el móvil?** Sí: las columnas se apilan (editor encima, vista
 previa debajo) y el esquema se oculta.
 
-**¿Puedo usarlo en inglés?** Sí: **🇬🇧 EN** en la barra superior o
+**¿Puedo usarlo en inglés?** Sí: **🌐 EN** en la barra superior o
 **⚙️ Ajustes → Idioma**. Se recuerda la próxima vez. Solo cambia la interfaz:
 tus documentos se quedan como los escribiste.
 
 **¿He borrado un documento por error?** Si no has vaciado la papelera, sigue
 ahí: **📚 Mis docs → 🗑️ Papelera → ♻️** lo devuelve a la biblioteca.
+
+**¿Puedo recuperar un texto que había quitado?** Si llegaste a guardarlo, sí:
+**📚 Mis docs → 🕘** en su fila y **♻️** en la versión que quieras. Hay hasta 20
+copias por documento y se guarda una como máximo cada minuto.
 
 **¿Y si tengo dos documentos con el mismo nombre?** Pasa: se guardan como
 entradas distintas en *Mis docs*. Renombra uno con ✏️.

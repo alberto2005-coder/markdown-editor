@@ -3,11 +3,26 @@
 Todas las versiones notables de **Markdown Editor**.
 El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [1.9.0] — 2026-10-07
+
+### Added
+- **Historial de versiones por documento**: se guarda una copia automática al
+  autoguardar y al cambiar de documento — como mucho **una por minuto** y hasta
+  **20 por documento** —. Botón 🕘 en cada fila de *📚 Mis docs*: lista las
+  versiones con fecha y tamaño, las **restaura** (♻️) y las borra (🗑️). Nueva
+  clave `md-editor:versiones`; si el almacenamiento se llena, se recortan las
+  copias más antiguas en lugar de perder el resto.
+
+### Fixed
+- El botón y el selector de idioma usaban banderas (🇬🇧 / 🇪🇸), que **Windows no
+  dibuja** (salen como las letras "GB" / "ES"): ahora llevan 🌐, que se ve bien
+  en todos los sistemas. Documentación actualizada.
+
 ## [1.8.0] — 2026-10-07
 
 ### Added
 - **Multi-idioma español / inglés**: nuevo `js/i18n.js` con el diccionario
-  (271 claves; español e inglés fila a fila), botón **🇬🇧 EN / 🇪🇸 ES** en la
+  (271 claves; español e inglés fila a fila), botón **🌐 EN / 🌐 ES** en la
   cabecera y selector en ⚙️ Ajustes. Se recuerda en el navegador y, si no hay
   elección previa, se usa el idioma del sistema (`navigator.language`).
 - **Papelera**: borrar un documento ya no lo elimina: pasa a **🗑️ Papelera**

@@ -20,6 +20,7 @@ const DOC_ID_KEY = 'md-editor:docId';
 const THEME_KEY  = 'md-editor:tema';
 const LANG_KEY   = 'md-editor:idioma';
 const PAPER_KEY  = 'md-editor:papelera';
+const HIST_KEY   = 'md-editor:versiones';
 
 /* =========================================================
    0. IDIOMA (es / en) — cadenas en js/i18n.js
@@ -66,14 +67,14 @@ function aplicarIdioma() {
   if (ogDesc) ogDesc.content = t('doc.ogdesc');
 
   const btnIdioma = document.getElementById('btnIdioma');
-  if (btnIdioma) btnIdioma.textContent = idioma === 'es' ? '🇬🇧 EN' : '🇪🇸 ES';
+  if (btnIdioma) btnIdioma.textContent = idioma === 'es' ? '🌐 EN' : '🌐 ES';
   const selIdioma = document.getElementById('ajIdioma');
   if (selIdioma) selIdioma.value = idioma;
 
   // cadenas generadas por código
   actualizarSaveInfo();
   pintaListaDocs();
-  actualizaContadorPapelera();
+  actualizaBarraDocs();
   construirGrid();
   render();
   setMensaje(t('msg.listo'));
@@ -150,6 +151,7 @@ function persistir(silencioso) {
   if (escribirDocs()) {
     dirty = false;
     savedAt = Date.now();
+    guardaVersionActual(false);   // copia para el historial de versiones
     actualizarSaveInfo();
     pintaListaDocs();
     if (!silencioso) setMensaje(t('msg.saved', { n: d.name + '.md' }));
@@ -170,6 +172,7 @@ function fechaCorta(ts) {
 function pintaListaDocs() {
   docsListEl.innerHTML = '';
 
+  if (vistaVersiones) { pintaVersiones(); return; }
   if (vistaPapelera) { pintaPapelera(); return; }
 
   const ordenados = [...docs].sort((a, b) => b.updated - a.updated);
@@ -191,11 +194,13 @@ function pintaListaDocs() {
         <span class="doc-meta">${escapar(t('docs.meta', { n: palabras, f: fechaCorta(d.updated) }))}</span>
       </div>
       <div class="doc-tools">
+        <button class="mini" data-act="hist" title="${escapar(t('docs.hist.t'))}">🕘</button>
         <button class="mini" data-act="renombrar" title="${escapar(t('docs.rename.t'))}">✏️</button>
         <button class="mini" data-act="borrar" title="${escapar(t('docs.delete.t'))}">🗑️</button>
       </div>`;
 
     item.querySelector('.doc-info').addEventListener('click', () => abrirDoc(d.id));
+    item.querySelector('[data-act="hist"]').addEventListener('click', () => abreVersiones(d.id));
     item.querySelector('[data-act="renombrar"]').addEventListener('click', () => renombrarDoc(d.id));
     item.querySelector('[data-act="borrar"]').addEventListener('click', () => borrarDoc(d.id));
     docsListEl.appendChild(item);
@@ -217,17 +222,26 @@ function cargarPapelera() {
 
 function escribirPapelera() {
   try { localStorage.setItem(PAPER_KEY, JSON.stringify(papelera)); } catch (e) {}
-  actualizaContadorPapelera();
+  actualizaBarraDocs();
 }
 
-function actualizaContadorPapelera() {
+/** Pinta la barra del modal según la vista activa: lista, papelera o versiones. */
+function actualizaBarraDocs() {
   const btn = document.getElementById('btnTrash');
   const vaciar = document.getElementById('btnVaciar');
   if (btn) {
-    const etiqueta = vistaPapelera ? t('docs.back') : t('docs.trash');
-    btn.textContent = papelera.length ? `${etiqueta} (${papelera.length})` : etiqueta;
+    const fuera = vistaPapelera || vistaVersiones;
+    const etiqueta = fuera ? t('docs.back') : t('docs.trash');
+    const cuenta = vistaVersiones ? 0 : papelera.length;
+    btn.textContent = cuenta ? `${etiqueta} (${cuenta})` : etiqueta;
   }
   if (vaciar) vaciar.hidden = !(vistaPapelera && papelera.length);
+
+  // en la vista de versiones solo se navega: se ocultan el resto de acciones
+  ['btnNewDoc', 'btnBackup', 'btnZip', 'btnRestore'].forEach(idBtn => {
+    const el = document.getElementById(idBtn);
+    if (el) el.hidden = vistaVersiones;
+  });
 }
 
 function pintaPapelera() {
@@ -277,6 +291,7 @@ function borrarDefinitivo(i) {
   if (!confirm(t('msg.confirmpurge', { n: d.name + '.md' }))) return;   // no vuelve a la biblioteca
   papelera.splice(i, 1);
   escribirPapelera();
+  borraVersiones(d.id);                 // sin vuelta atrás posible
   pintaListaDocs();
   setMensaje(t('msg.trashpurged', { n: d.name + '.md' }));
 }
@@ -285,10 +300,154 @@ function vaciarPapelera() {
   if (!papelera.length) return;
   const n = papelera.length;
   if (!confirm(t('msg.vaciar', { n: n }))) return;
+  papelera.forEach(d => borraVersiones(d.id));
   papelera = [];
   escribirPapelera();
   pintaListaDocs();
   setMensaje(t('msg.trashpurged', { n: n }));
+}
+
+/* ---------- historial de versiones: copia automática por documento ---------- */
+
+let versiones = {};      // { [idDoc]: [{ ts, name, content }] }
+let vistaVersiones = false;
+let versionesDe = null;  // documento cuyas versiones se están viendo
+const VERSIONES_MAX = 20;   // copias que se guardan por documento
+const VERSIONES_MS  = 60000; // una copia como mucho por minuto
+
+function cargarVersiones() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(HIST_KEY));
+    versiones = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+  } catch (e) { versiones = {}; }
+}
+
+function escribirVersiones() {
+  try {
+    localStorage.setItem(HIST_KEY, JSON.stringify(versiones));
+    return true;
+  } catch (e) {
+    // sin sitio: se recortan las copias más antiguas y se vuelve a intentar
+    try {
+      Object.keys(versiones).forEach(k => { versiones[k] = versiones[k].slice(0, 3); });
+      localStorage.setItem(HIST_KEY, JSON.stringify(versiones));
+      return true;
+    } catch (e2) { return false; }
+  }
+}
+
+/**
+ * Guarda una copia del documento abierto para poder volver atrás.
+ * Con `forzar` (al cambiar de documento) se salta el límite de un minuto.
+ */
+function guardaVersionActual(forzar) {
+  const d = docActual();
+  if (!d || !d.content) return;
+  const lista = versiones[d.id] || [];
+  const ultima = lista[0];
+  if (ultima && ultima.content === d.content && ultima.name === d.name) return;
+  if (!forzar && ultima && Date.now() - ultima.ts < VERSIONES_MS) return;
+  lista.unshift({ ts: Date.now(), name: d.name, content: d.content });
+  versiones[d.id] = lista.slice(0, VERSIONES_MAX);
+  escribirVersiones();
+}
+
+function borraVersiones(id) {
+  if (!versiones[id]) return;
+  delete versiones[id];
+  escribirVersiones();
+}
+
+/* ---------- vista "versiones de un documento" dentro de Mis docs ---------- */
+
+function abreVersiones(id) {
+  versionesDe = id;
+  vistaVersiones = true;
+  vistaPapelera = false;
+  actualizaBarraDocs();
+  pintaListaDocs();
+}
+
+function cierraVersiones() {
+  vistaVersiones = false;
+  versionesDe = null;
+}
+
+function pintaVersiones() {
+  const d = docs.find(x => x.id === versionesDe);
+  const lista = versiones[versionesDe] || [];
+
+  if (!d) {
+    docsListEl.innerHTML = `<p class="docs-empty">${escapar(t('docs.hist.gone'))}</p>`;
+    return;
+  }
+
+  docsListEl.innerHTML = `<p class="modal-note">🕘 ${escapar(t('docs.hist.for', { n: d.name + '.md' }))}</p>`;
+
+  if (!lista.length) {
+    docsListEl.insertAdjacentHTML('beforeend',
+      `<p class="docs-empty">${escapar(t('docs.hist.empty'))}</p>`);
+    return;
+  }
+
+  lista.forEach((v, i) => {
+    const palabras = (String(v.content || '').match(/\S+/g) || []).length;
+    const item = document.createElement('div');
+    item.className = 'doc-item' + (i === 0 ? ' activo' : '');
+    item.innerHTML = `
+      <div class="doc-info" role="button" tabindex="0" title="${escapar(t('docs.hist.restore.t'))}">
+        <span class="doc-name">🕘 ${escapar(fechaCorta(v.ts))}</span>
+        <span class="doc-meta">${escapar(t('docs.vmeta', { n: palabras, t: tiempoDesde(v.ts) }))}</span>
+      </div>
+      <div class="doc-tools">
+        <button class="mini" data-act="vrestaurar" title="${escapar(t('docs.hist.restore.t'))}">♻️</button>
+        <button class="mini" data-act="vborrar" title="${escapar(t('docs.hist.del.t'))}">🗑️</button>
+      </div>`;
+
+    item.querySelector('.doc-info').addEventListener('click', () => restauraVersion(i));
+    item.querySelector('[data-act="vrestaurar"]').addEventListener('click', () => restauraVersion(i));
+    item.querySelector('[data-act="vborrar"]').addEventListener('click', () => borraVersion(i));
+    docsListEl.appendChild(item);
+  });
+}
+
+/** Vuelve el documento a la copia elegida (lo actual se guarda antes). */
+function restauraVersion(i) {
+  const v = (versiones[versionesDe] || [])[i];
+  const d = docs.find(x => x.id === versionesDe);
+  if (!v || !d) return;
+
+  if (editor.value.trim()) persistir(true);   // lo que hay ahora, primero
+  guardaVersionActual(true);                  // y también copiado de seguridad
+
+  currentId = d.id;
+  d.content = v.content;
+  d.updated = Date.now();
+  editor.value = v.content;
+  fileNameIn.value = d.name;
+  dirty = false;
+  savedAt = Date.now();
+
+  escribirDocs();
+  reiniciarHistorial();
+  cierraVersiones();
+  actualizaBarraDocs();
+  pintaListaDocs();
+  render();
+  actualizarSaveInfo();
+  setMensaje(t('msg.vrestored', { f: fechaCorta(v.ts) }));
+}
+
+function borraVersion(i) {
+  const lista = versiones[versionesDe] || [];
+  const v = lista[i];
+  if (!v) return;
+  if (!confirm(t('msg.vconfirm', { f: fechaCorta(v.ts) }))) return;
+  lista.splice(i, 1);
+  if (lista.length) versiones[versionesDe] = lista; else delete versiones[versionesDe];
+  escribirVersiones();
+  pintaListaDocs();
+  setMensaje(t('msg.vdeleted'));
 }
 
 function escapar(s) {
@@ -299,6 +458,7 @@ function escapar(s) {
 function abrirDoc(id) {
   if (id === currentId) { cierraDocs(); return; }
   if (editor.value.trim()) persistir(true);          // nunca se pierde lo actual
+  guardaVersionActual(true);                         // copia antes de cambiar
   const d = docs.find(x => x.id === id);
   if (!d) return;
   currentId  = d.id;
@@ -348,7 +508,8 @@ function borrarDoc(id) {
 
 function abreDocs() {
   vistaPapelera = false;
-  actualizaContadorPapelera();
+  cierraVersiones();
+  actualizaBarraDocs();
   pintaListaDocs();
   docsModal.hidden = false;
 }
@@ -360,6 +521,7 @@ function cierraDocs() { docsModal.hidden = true; }
 
 function nuevo() {
   if (editor.value.trim()) persistir(true);
+  guardaVersionActual(true);
   editor.value = '';
   fileNameIn.value = t('msg.defaultname');
   currentId = null;
@@ -1313,6 +1475,7 @@ function cierraPlantillas() { plantillasPop.hidden = true; }
 function crearDesdePlantilla(clave) {
   const p = plantilla(clave);
   if (editor.value.trim()) persistir(true);
+  guardaVersionActual(true);
   editor.value = p.contenido;
   fileNameIn.value = p.nombre;
   currentId = null;
@@ -1477,8 +1640,10 @@ document.getElementById('btnZip').addEventListener('click', exportarZip);
 
 /* ---------- 10g. Papelera: mostrar / restaurar / vaciar ---------- */
 document.getElementById('btnTrash').addEventListener('click', () => {
-  vistaPapelera = !vistaPapelera;
-  actualizaContadorPapelera();
+  // dentro de "versiones" el botón sirve para volver a la lista
+  if (vistaVersiones) cierraVersiones();
+  else vistaPapelera = !vistaPapelera;
+  actualizaBarraDocs();
   pintaListaDocs();
 });
 document.getElementById('btnVaciar').addEventListener('click', vaciarPapelera);
@@ -1528,6 +1693,7 @@ window.addEventListener('drop', (e) => {
   // biblioteca y papelera
   cargarDocs();
   cargarPapelera();
+  cargarVersiones();
 
   // volcar el idioma activo sobre toda la página
   aplicarIdioma();

@@ -14,6 +14,8 @@ autoguardado, deshacer/rehacer, exportación a HTML/PDF y compartir por enlace.
 
 - ✍️ **Vista previa en vivo** mientras escribes
 - 🌍 **Español / English** — cambia de idioma con un botón (⚙️ Ajustes también)
+- 🕘 **Historial de versiones** — copias automáticas por documento: vuelves
+  atrás a la versión de hace minutos o días
 - 🔍 **Buscar y reemplazar** (`Ctrl+F`) con contador de coincidencias
 - 🗂 **Modos de vista**: solo editor, pantalla dividida o solo vista previa
 - ⚙️ **Ajustes de edición**: fuente, tamaño del texto y ancho de lectura
@@ -113,7 +115,7 @@ Con Git, desde la carpeta:
 ```powershell
 git init
 git add .
-git commit -m "Markdown Editor 1.8.0"
+git commit -m "Markdown Editor 1.9.0"
 git branch -M main
 git remote add origin https://github.com/TU-USUARIO/markdown-editor.git
 git push -u origin main
