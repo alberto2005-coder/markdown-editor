@@ -13,6 +13,8 @@ rápido, con los tres primeros apartados te bastan.
 3. Escribe tu título con `#` y dale a `**negrita**`… o usa los botones de arriba:
    no hace falta que memorices nada.
 4. Tu trabajo se **guarda solo** (autoguardado). No hay que pulsar nada.
+5. ¿Prefieres el inglés? Pulsa **🌐 EN** en la barra superior: toda la web
+   cambia al instante (**🌐 ES** la vuelve a poner en español).
 
 > 💡 La primera vez aparece un documento de ejemplo. Púlsalo, tócalo, y cuando
 > quieras empieza el tuyo con **＋ Nuevo** (abre el menú de plantillas: apuntes,
@@ -111,8 +113,8 @@ centro para moverte por títulos largos (va resaltando por dónde vas).
 - **✍️ ◫ 👀** (derecha de la barra de formato): solo editor para concentrarte,
   dividido para ver todo, solo vista previa para leer o leerle a alguien.
 - **⚙️ Ajustes**: elige fuente (monoespaciada, sans serif o serif), tamaño del
-  editor y de la vista previa, ancho de lectura y tema. Se guarda solo y hay
-  un botón para **restablecer** los valores.
+  editor y de la vista previa, ancho de lectura, tema e **idioma**. Se guarda
+  solo y hay un botón para **restablecer** los valores.
 
 ### 📂 Abrir arrastrando
 Arrastra un archivo `.md` o `.txt` desde el explorador y se abre en la ventana
@@ -124,7 +126,7 @@ igual que con `Ctrl+V`.
 En otro equipo o tras borrar datos del navegador: `⬆️ Restaurar` y lo tienes
 todo de vuelta (los documentos existentes no se pisan, se añaden).
 
-### 🌍 Cambiar el idioma (español ↔ inglés)
+### 🌐 Cambiar el idioma (español ↔ inglés)
 Toda la interfaz está en los dos idiomas:
 
 1. Pulsa **🌐 EN** en la barra superior para pasar a inglés (entonces dice
@@ -244,7 +246,7 @@ datos del navegador, se borra: haz **📚 Mis docs → ⬇️ Respaldo** de vez 
 cuando y **⬆️ Restaurar** en el equipo nuevo.
 
 **¿Puedo cambiar la fuente o el tamaño?** Sí: **⚙️ Ajustes** → fuente, tamaño
-del editor, tamaño de la vista previa, ancho de lectura y tema.
+del editor, tamaño de la vista previa, ancho de lectura, tema e **idioma**.
 
 **¿Funciona sin internet?** Sí para escribir, abrir, guardar y exportar. La vista
 previa completa necesita internet la primera vez (usa `marked` por CDN); sin

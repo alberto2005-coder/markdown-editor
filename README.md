@@ -13,7 +13,7 @@ autoguardado, deshacer/rehacer, exportación a HTML/PDF y compartir por enlace.
 ## ✨ Características
 
 - ✍️ **Vista previa en vivo** mientras escribes
-- 🌍 **Español / English** — cambia de idioma con un botón (⚙️ Ajustes también)
+- 🌐 **Español / English** — cambia de idioma con un botón (⚙️ Ajustes también)
 - 🕘 **Historial de versiones** — copias automáticas por documento: vuelves
   atrás a la versión de hace minutos o días
 - 🔍 **Buscar y reemplazar** (`Ctrl+F`) con contador de coincidencias
@@ -115,7 +115,7 @@ Con Git, desde la carpeta:
 ```powershell
 git init
 git add .
-git commit -m "Markdown Editor 1.9.1"
+git commit -m "Markdown Editor 1.9.2"
 git branch -M main
 git remote add origin https://github.com/TU-USUARIO/markdown-editor.git
 git push -u origin main
@@ -159,6 +159,8 @@ Si sale ❌ el proyecto **no está listo para publicarse**.
 |---|---|
 | La vista previa sale en texto plano | Sin internet: `marked` va por CDN. Conexión y se arregla solo |
 | Se perdió la biblioteca | Vive en el navegador: haz **📚 Mis docs → ⬇️ Respaldo** de vez en cuando y **⬆️ Restaurar** en el equipo nuevo |
+| Borré un documento por error | No pasa nada: **📚 Mis docs → 🗑️ Papelera → ♻️** lo devuelve |
+| Quiero la web en inglés | **🌐 EN** en la barra superior o **⚙️ Ajustes → Idioma** (se recuerda) |
 | GitHub Pages no muestra nada | Comprueba que `.nojekyll` está subido y `index.html` en la raíz |
 
 Hay más en el [manual de usuario](docs/USUARIO.md#8-preguntas-frecuentes).

@@ -55,7 +55,7 @@ Busca `/* ======` o el número de sección.
 |---|---|---|
 | **0. Idioma** | Diccionario es/en y volcado sobre la página | `cargarIdioma()`, `t(clave, params)`, `aplicarIdioma()`, `ponIdioma()`, `demo()` |
 | **1. Biblioteca** | CRUD de documentos en `localStorage` | `cargarDocs()`, `escribirDocs()`, `persistir(silencioso)`, `docActual()` |
-| **2. Modal Mis docs** | Pinta la lista, la papelera y sus acciones | `pintaListaDocs()`, `pintaPapelera()`, `abrirDoc()`, `renombrarDoc()`, `borrarDoc()`, `restaurarDoc()`, `borrarDefinitivo()`, `vaciarPapelera()` |
+| **2. Modal Mis docs** | Pinta la lista, la papelera y las versiones de un documento | `pintaListaDocs()`, `pintaPapelera()`, `pintaVersiones()`, `abreVersiones()`, `actualizaBarraDocs()`, `abrirDoc()`, `renombrarDoc()`, `borrarDoc()`, `restaurarDoc()`, `borrarDefinitivo()`, `vaciarPapelera()` |
 | **3. Acciones de archivo** | Nuevo / abrir / descargar | `nuevo()`, `abrirDisco()`, `abrirArchivoDisco(file)`, `descargar()`, `descargarComo()`, `guardar()`, `copiar()` |
 | **4. Autoguardado** | 1,2 s de rebote + indicador del pie | `marcarSucio()`, `persistir`, `actualizarSaveInfo()`, `tiempoDesde()`, `beforeunload` |
 | **4b. Historial** | Deshacer/rehacer propios | `notaCambio()`, `deshacer()`, `rehacer()`, `restaura()`, `reiniciarHistorial()` |
@@ -208,13 +208,16 @@ sección relacionada. Cierra con `Esc` añadiendo una rama en la sección 8.
    `aria-label`), `data-i18n-ph=` (placeholder) o `data-i18n-html=` (si lleva
    etiquetas).
 3. Si el texto se calcula en **JS**, usa `t('msg.micosa')` o con parámetros:
-   `t('msg.micosa', { n: 3 })` con `{n}` en la cadena.
+   `t('msg.micosa', { n: 3 })` con `{n}` en la cadena. Si el singular y el
+   plural son distintos, usa **dos claves** (`msg.micosa` y `msg.micosa1`) y
+   elige una como hace `metaTexto(palabras, 'a.b', 'a.b1', f)`.
 4. Ejecuta `node scripts/check.js`: te dirá si la clave no existe en el
-   diccionario o si sobra.
+   diccionario o si sobra (también detecta las claves que vas pasando por
+   variable).
 
 No hace falta registrar nada más: `aplicarIdioma()` recorre todos los
 `data-i18n*` de la página y repinta además la lista de documentos, la papelera,
-el esquema, las estadísticas y el indicador de guardado.
+las versiones, el esquema, las estadísticas y el indicador de guardado.
 
 ---
 
@@ -365,7 +368,7 @@ Ese mismo array da el contador `n/total` y el «dar la vuelta» al final.
 [ ] 📚 Mis docs → 🕘 → listar versiones → ♻️ restaurar una → sigue intacto
 [ ] 🗑️ Borrar un documento → va a la papelera → ♻️ lo restaura
 [ ] 🗑️ ❌ borrar para siempre / Vaciar → avisan que no se puede recuperar
-[ ] 🌍 EN: toda la interfaz traducida (sin textos en español sueltos) y al
+[ ] 🌐 EN: toda la interfaz traducida (sin textos en español sueltos) y al
     volver a ES se restaura todo; recargar mantiene el idioma elegido
 [ ] `node scripts/check.js` en verde (incluye la comprobación de i18n)
 [ ] Arrastrar un .md a la ventana → se abre

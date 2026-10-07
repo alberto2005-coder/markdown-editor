@@ -3,6 +3,19 @@
 Todas las versiones notables de **Markdown Editor**.
 El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [1.9.2] — 2026-10-07
+
+### Documentation
+- **Repaso de coherencia** de toda la documentación con el código de la 1.9.1:
+  - `README.md`: dos filas nuevas en *Problemas frecuentes* (borrado por error
+    → papelera; usarlo en inglés → 🌐) y emoji del idioma unificado con la web.
+  - `docs/USUARIO.md`: el **Idioma** ya aparece en *Primeros pasos* y en las dos
+    menciones de ⚙️ Ajustes que lo olvidaban.
+  - `docs/DESARROLLADOR.md`: la fila 2 del mapa de `app.js` recoge las funciones
+    de versiones (`pintaVersiones()`, `abreVersiones()`, `actualizaBarraDocs()`).
+- `CHANGELOG.md`: añadidos los enlaces de referencia que faltaban (1.8.0,
+  1.9.0 y 1.9.1).
+
 ## [1.9.1] — 2026-10-07
 
 ### Fixed
@@ -167,6 +180,9 @@ El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.c
 - Icono y favicon SVG propios.
 - Listo para GitHub Pages (`.nojekyll`).
 
+[1.9.1]: #191--2026-10-07
+[1.9.0]: #190--2026-10-07
+[1.8.0]: #180--2026-10-07
 [1.7.0]: #170--2026-10-07
 [1.6.0]: #160--2026-10-07
 [1.5.1]: #151--2026-10-07
