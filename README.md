@@ -115,7 +115,7 @@ Con Git, desde la carpeta:
 ```powershell
 git init
 git add .
-git commit -m "Markdown Editor 1.9.0"
+git commit -m "Markdown Editor 1.9.1"
 git branch -M main
 git remote add origin https://github.com/TU-USUARIO/markdown-editor.git
 git push -u origin main

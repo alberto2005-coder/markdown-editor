@@ -169,6 +169,11 @@ function fechaCorta(ts) {
   } catch (e) { return ''; }
 }
 
+/** "{n} palabras · {f}" con el singular correcto (pasa las dos claves). */
+function metaTexto(palabras, plural, singular, param) {
+  return t(palabras === 1 ? singular : plural, { n: palabras, f: param, t: param });
+}
+
 function pintaListaDocs() {
   docsListEl.innerHTML = '';
 
@@ -191,7 +196,7 @@ function pintaListaDocs() {
     item.innerHTML = `
       <div class="doc-info" role="button" tabindex="0" title="${escapar(t('docs.open.t', { n: d.name }))}">
         <span class="doc-name">${activo ? '📄 ' : '📕 '}${escapar(d.name)}.md</span>
-        <span class="doc-meta">${escapar(t('docs.meta', { n: palabras, f: fechaCorta(d.updated) }))}</span>
+        <span class="doc-meta">${escapar(metaTexto(palabras, 'docs.meta', 'docs.meta1', fechaCorta(d.updated)))}</span>
       </div>
       <div class="doc-tools">
         <button class="mini" data-act="hist" title="${escapar(t('docs.hist.t'))}">🕘</button>
@@ -257,7 +262,7 @@ function pintaPapelera() {
     item.innerHTML = `
       <div class="doc-info" role="button" tabindex="0" title="${escapar(t('docs.restore.btn'))}">
         <span class="doc-name">🗑️ ${escapar(d.name)}.md</span>
-        <span class="doc-meta">${escapar(t('docs.meta', { n: palabras, f: fechaCorta(d.borrado || d.updated) }))}</span>
+        <span class="doc-meta">${escapar(metaTexto(palabras, 'docs.meta', 'docs.meta1', fechaCorta(d.borrado || d.updated)))}</span>
       </div>
       <div class="doc-tools">
         <button class="mini" data-act="restaurar" title="${escapar(t('docs.restore.btn'))}">♻️</button>
@@ -397,7 +402,7 @@ function pintaVersiones() {
     item.innerHTML = `
       <div class="doc-info" role="button" tabindex="0" title="${escapar(t('docs.hist.restore.t'))}">
         <span class="doc-name">🕘 ${escapar(fechaCorta(v.ts))}</span>
-        <span class="doc-meta">${escapar(t('docs.vmeta', { n: palabras, t: tiempoDesde(v.ts) }))}</span>
+        <span class="doc-meta">${escapar(metaTexto(palabras, 'docs.vmeta', 'docs.vmeta1', tiempoDesde(v.ts)))}</span>
       </div>
       <div class="doc-tools">
         <button class="mini" data-act="vrestaurar" title="${escapar(t('docs.hist.restore.t'))}">♻️</button>
@@ -1171,7 +1176,7 @@ function render() {
   const palabras = (md.match(/\S+/g) || []).length;
   const min = Math.max(1, Math.round(palabras / 200));
   statsEl.textContent = palabras
-    ? t('msg.stat', { n: palabras, m: min })
+    ? t(palabras === 1 ? 'msg.stat1' : 'msg.stat', { n: palabras, m: min })
     : t('msg.stat0');
 
   construirEsquema();

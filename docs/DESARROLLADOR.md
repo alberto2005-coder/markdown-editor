@@ -403,7 +403,8 @@ local con `node scripts/check.js`):
 9. Que los **enlaces relativos** de README y `docs/` no estén rotos
 10. **i18n**: sintaxis de `js/i18n.js`, **paridad es↔en** de todas las claves,
     que cada clave de los atributos `data-i18n*` del HTML y de cada `t('…')` de
-    `app.js` exista en el diccionario, y aviso de las claves que no usa nadie
+    `app.js` exista en el diccionario (también las que van por variable), y
+    aviso de las claves que no usa nadie
 
 Sale con **código 1** si algo falla → el paso del workflow se pone rojo.
 

@@ -3,6 +3,17 @@
 Todas las versiones notables de **Markdown Editor**.
 El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [1.9.1] — 2026-10-07
+
+### Fixed
+- **Singular de «palabras»**: las estadísticas, la lista de documentos, la
+  papelera y el historial ahora dicen `1 word` / `1 palabra` en lugar de
+  «1 words» / «1 palabras» (claves `msg.stat1`, `docs.meta1` y `docs.vmeta1`
+  + helper `metaTexto()`).
+- `scripts/check.js` reconoce también las claves de i18n que se pasan por
+  variable (`t(clave)`) y se salta los comentarios del JS: ni falsos avisos de
+  «claves sin usar» ni mensajes falsos por ejemplos dentro de comentarios.
+
 ## [1.9.0] — 2026-10-07
 
 ### Added

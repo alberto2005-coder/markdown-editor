@@ -191,6 +191,9 @@ if (!hay('js/i18n.js')) {
     [...js.matchAll(/\bt\(\s*'([^']+)'/g)].forEach(m => {
       if (!m[1].endsWith('.')) enJs.add(m[1]);       // 'tpl.' + x → dinámica
     });
+    // también las que se pasan por variable: t(clave) o t(palabras === 1 ? 'a.b1' : 'a.b')
+    const jsSinComentarios = js.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/.*$/gm, ' ');
+    [...jsSinComentarios.matchAll(/'([a-z][a-z0-9]*(?:\.[a-z0-9]+)+)'/g)].forEach(m => enJs.add(m[1]));
     const rotasJs = [...enJs].filter(k => claves.indexOf(k) === -1);
     rotasJs.forEach(k => mal('app.js pide t("' + k + '") y no está en i18n.js'));
     ok(enJs.size + ' claves usadas en app.js');
