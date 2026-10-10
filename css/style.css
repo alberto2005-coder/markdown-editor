@@ -759,3 +759,36 @@ button:disabled:hover { background: var(--panel); border-color: var(--border); }
   .markdown-body { padding: 0; }
   body { background: #fff; color: #000; }
 }
+
+/* ---------- modal personalizado ---------- */
+.dialog-card {
+  max-width: 400px;
+}
+.dialog-body {
+  padding: 16px 20px;
+}
+.dialog-input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: inherit;
+}
+.btn-aceptar {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 500;
+}
+.btn-cancelar {
+  background: transparent;
+  color: var(--fg-light);
+  border-color: transparent;
+}
+.btn-cancelar:hover {
+  background: var(--bg);
+  color: var(--fg);
+}

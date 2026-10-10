@@ -23,7 +23,66 @@ const PAPER_KEY  = 'md-editor:papelera';
 const HIST_KEY   = 'md-editor:versiones';
 
 /* =========================================================
-   0. IDIOMA (es / en) — cadenas en js/i18n.js
+   0. MODAL PERSONALIZADO (Confirm / Prompt)
+   ========================================================= */
+
+function customDialog(message, defaultValue = null) {
+  return new Promise(resolve => {
+    const modal = document.getElementById('customDialog');
+    const msgEl = document.getElementById('dialogMessage');
+    const inputEl = document.getElementById('dialogInput');
+    const btnCancel = document.getElementById('btnDialogCancel');
+    const btnOk = document.getElementById('btnDialogOk');
+
+    if (!modal) {
+      // Fallback si no está el HTML
+      if (defaultValue !== null) return resolve(prompt(message, defaultValue));
+      return resolve(confirm(message));
+    }
+
+    const isPrompt = defaultValue !== null;
+    msgEl.textContent = message;
+    
+    if (isPrompt) {
+      inputEl.hidden = false;
+      inputEl.value = defaultValue;
+    } else {
+      inputEl.hidden = true;
+      inputEl.value = '';
+    }
+
+    modal.hidden = false;
+    if (isPrompt) inputEl.focus();
+
+    const cleanup = () => {
+      modal.hidden = true;
+      btnCancel.onclick = null;
+      btnOk.onclick = null;
+      inputEl.onkeyup = null;
+    };
+
+    btnCancel.onclick = () => {
+      cleanup();
+      resolve(isPrompt ? null : false);
+    };
+
+    btnOk.onclick = () => {
+      cleanup();
+      resolve(isPrompt ? inputEl.value : true);
+    };
+
+    inputEl.onkeyup = (e) => {
+      if (e.key === 'Enter') btnOk.click();
+      if (e.key === 'Escape') btnCancel.click();
+    };
+  });
+}
+
+const customConfirm = (msg) => customDialog(msg);
+const customPrompt = (msg, def) => customDialog(msg, def);
+
+/* =========================================================
+   0.1. IDIOMA (es / en) — cadenas en js/i18n.js
    ========================================================= */
 
 let idioma = 'es';
@@ -187,6 +246,8 @@ function pintaListaDocs() {
     return;
   }
 
+  const fragment = document.createDocumentFragment();
+
   ordenados.forEach(d => {
     const activo = d.id === currentId;
     const palabras = (d.content.match(/\S+/g) || []).length;
@@ -208,8 +269,10 @@ function pintaListaDocs() {
     item.querySelector('[data-act="hist"]').addEventListener('click', () => abreVersiones(d.id));
     item.querySelector('[data-act="renombrar"]').addEventListener('click', () => renombrarDoc(d.id));
     item.querySelector('[data-act="borrar"]').addEventListener('click', () => borrarDoc(d.id));
-    docsListEl.appendChild(item);
+    fragment.appendChild(item);
   });
+  
+  docsListEl.appendChild(fragment);
 }
 
 /* ---------- papelera: documentos borrados (se pueden restaurar) ---------- */
@@ -255,6 +318,8 @@ function pintaPapelera() {
     return;
   }
 
+  const fragment = document.createDocumentFragment();
+
   papelera.forEach((d, i) => {
     const palabras = (String(d.content || '').match(/\S+/g) || []).length;
     const item = document.createElement('div');
@@ -272,8 +337,10 @@ function pintaPapelera() {
     item.querySelector('.doc-info').addEventListener('click', () => restaurarDoc(i));
     item.querySelector('[data-act="restaurar"]').addEventListener('click', () => restaurarDoc(i));
     item.querySelector('[data-act="definitivo"]').addEventListener('click', () => borrarDefinitivo(i));
-    docsListEl.appendChild(item);
+    fragment.appendChild(item);
   });
+  
+  docsListEl.appendChild(fragment);
 }
 
 function restaurarDoc(i) {
@@ -290,10 +357,10 @@ function restaurarDoc(i) {
   setMensaje(t('msg.trashrestored', { n: d.name + '.md' }));
 }
 
-function borrarDefinitivo(i) {
+async function borrarDefinitivo(i) {
   const d = papelera[i];
   if (!d) return;
-  if (!confirm(t('msg.confirmpurge', { n: d.name + '.md' }))) return;   // no vuelve a la biblioteca
+  if (!(await customConfirm(t('msg.confirmpurge', { n: d.name + '.md' })))) return;   // no vuelve a la biblioteca
   papelera.splice(i, 1);
   escribirPapelera();
   borraVersiones(d.id);                 // sin vuelta atrás posible
@@ -301,10 +368,10 @@ function borrarDefinitivo(i) {
   setMensaje(t('msg.trashpurged', { n: d.name + '.md' }));
 }
 
-function vaciarPapelera() {
+async function vaciarPapelera() {
   if (!papelera.length) return;
   const n = papelera.length;
-  if (!confirm(t('msg.vaciar', { n: n }))) return;
+  if (!(await customConfirm(t('msg.vaciar', { n: n })))) return;
   papelera.forEach(d => borraVersiones(d.id));
   papelera = [];
   escribirPapelera();
@@ -395,6 +462,8 @@ function pintaVersiones() {
     return;
   }
 
+  const fragment = document.createDocumentFragment();
+
   lista.forEach((v, i) => {
     const palabras = (String(v.content || '').match(/\S+/g) || []).length;
     const item = document.createElement('div');
@@ -412,8 +481,10 @@ function pintaVersiones() {
     item.querySelector('.doc-info').addEventListener('click', () => restauraVersion(i));
     item.querySelector('[data-act="vrestaurar"]').addEventListener('click', () => restauraVersion(i));
     item.querySelector('[data-act="vborrar"]').addEventListener('click', () => borraVersion(i));
-    docsListEl.appendChild(item);
+    fragment.appendChild(item);
   });
+  
+  docsListEl.appendChild(fragment);
 }
 
 /** Vuelve el documento a la copia elegida (lo actual se guarda antes). */
@@ -443,11 +514,11 @@ function restauraVersion(i) {
   setMensaje(t('msg.vrestored', { f: fechaCorta(v.ts) }));
 }
 
-function borraVersion(i) {
+async function borraVersion(i) {
   const lista = versiones[versionesDe] || [];
   const v = lista[i];
   if (!v) return;
-  if (!confirm(t('msg.vconfirm', { f: fechaCorta(v.ts) }))) return;
+  if (!(await customConfirm(t('msg.vconfirm', { f: fechaCorta(v.ts) })))) return;
   lista.splice(i, 1);
   if (lista.length) versiones[versionesDe] = lista; else delete versiones[versionesDe];
   escribirVersiones();
@@ -476,10 +547,10 @@ function abrirDoc(id) {
   setMensaje(t('msg.opened', { n: d.name + '.md' }));
 }
 
-function renombrarDoc(id) {
+async function renombrarDoc(id) {
   const d = docs.find(x => x.id === id);
   if (!d) return;
-  const nuevo = prompt(t('msg.renameprompt'), d.name);
+  const nuevo = await customPrompt(t('msg.renameprompt'), d.name);
   if (nuevo === null) return;
   const limpio = nuevo.trim() || t('msg.defaultname');
   d.name = limpio;
@@ -490,10 +561,10 @@ function renombrarDoc(id) {
   setMensaje(t('msg.renamed', { n: limpio + '.md' }));
 }
 
-function borrarDoc(id) {
+async function borrarDoc(id) {
   const d = docs.find(x => x.id === id);
   if (!d) return;
-  if (!confirm(t('msg.confirmdelete', { n: d.name + '.md' }))) return;
+  if (!(await customConfirm(t('msg.confirmdelete', { n: d.name + '.md' })))) return;
   docs = docs.filter(x => x.id !== id);
 
   // a la papelera: se puede restaurar hasta que se vacíe (máx. 10)
@@ -988,8 +1059,8 @@ function compartir() {
 
   navigator.clipboard.writeText(enlace)
     .then(() => setMensaje(t('msg.linkcopied') + (aviso ? t('msg.linkaviso') : '')))
-    .catch(() => {
-      prompt(t('msg.linkprompt'), enlace);
+    .catch(async () => {
+      await customPrompt(t('msg.linkprompt'), enlace);
     });
 
   if (aviso) setTimeout(() => alert(t('msg.linkalert') + aviso), 150);
