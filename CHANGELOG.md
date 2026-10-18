@@ -3,6 +3,18 @@
 Todas las versiones notables de **Markdown Editor**.
 El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [1.10.0] — 2026-10-18
+
+### Added
+- **Versión de escritorio para Windows**: configuración en la carpeta aislada `desktop/` para empaquetar la app con Electron manteniendo GitHub Pages 100 % intacto.
+- **Instalador ejecutable con Inno Setup 7**: script `desktop/setup.iss` con estilo visual moderno, instalación por usuario o global en `Program Files`, accesos directos en el Menú Inicio y Escritorio, y desinstalador automático.
+- **Generador de icono de Windows**: `desktop/generate-icon.js` crea el archivo multi-resolución `icon.ico` en formato nativo DIB sin dependencias externas.
+- **Acuerdo de licencia**: integración obligatoria de [`LICENSE`](LICENSE) dentro del asistente de instalación.
+
+### Documentation
+- Unificación de toda la documentación en el `README.md` principal en la raíz del repositorio.
+- Actualización de `docs/USUARIO.md` y `docs/DESARROLLADOR.md` con la información de la aplicación de escritorio y su arquitectura.
+
 ## [1.9.2] — 2026-10-07
 
 ### Documentation

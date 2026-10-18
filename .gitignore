@@ -17,3 +17,10 @@ npm-debug.log*
 
 # ── Notas personales (no se suben) ──
 REPO-GITHUB.md
+
+# ── Desktop / Instalador Windows ──
+desktop/node_modules/
+desktop/dist/
+desktop/Output/
+desktop/src/
+

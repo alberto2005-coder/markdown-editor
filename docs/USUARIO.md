@@ -7,7 +7,7 @@ rápido, con los tres primeros apartados te bastan.
 
 ## 1. Primeros pasos
 
-1. Abre **`index.html`** (doble clic) o entra en la web publicada.
+1. Abre **`index.html`** (doble clic), entra en la web publicada en GitHub Pages o **instálalo en Windows** con el instalador de escritorio de la carpeta `desktop/`.
 2. Verás la pantalla **partida en dos**: escribes a la **izquierda** 👉 y el
    resultado aparece a la **derecha** al instante.
 3. Escribe tu título con `#` y dale a `**negrita**`… o usa los botones de arriba:
@@ -251,6 +251,11 @@ del editor, tamaño de la vista previa, ancho de lectura, tema e **idioma**.
 **¿Funciona sin internet?** Sí para escribir, abrir, guardar y exportar. La vista
 previa completa necesita internet la primera vez (usa `marked` por CDN); sin
 conexión hay un render básico de respaldo.
+
+**¿Se puede instalar en mi ordenador como app nativa de Windows?** Sí: en la
+carpeta `desktop/` dispones del empaquetado para Windows compilable con Inno Setup 7.
+Se instala con un asistente tradicional, crea accesos directos en el Menú Inicio
+y Escritorio, y te permite usar el editor en una ventana propia sin abrir el navegador.
 
 **¿Puedo usarlo en el móvil?** Sí: las columnas se apilan (editor encima, vista
 previa debajo) y el esquema se oculta.

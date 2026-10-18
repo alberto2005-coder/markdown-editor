@@ -58,6 +58,14 @@ markdown-editor/
 │   ├── icon.svg            ← logotipo
 │   └── favicon.svg         ← icono de pestaña
 │
+├── desktop/                ← versión de escritorio e instalador Windows
+│   ├── package.json        ← scripts de empaquetado (Electron)
+│   ├── main.js             ← proceso principal de la app nativa
+│   ├── prepare.js          ← sincronizador de archivos web
+│   ├── generate-icon.js    ← generador de icon.ico nativo
+│   ├── icon.ico            ← icono multi-resolución de Windows
+│   └── setup.iss           ← script de Inno Setup 7 para crear el instalador
+│
 └── docs/
     ├── USUARIO.md          ← manual de usuario
     └── DESARROLLADOR.md    ← guía técnica
@@ -120,6 +128,49 @@ git branch -M main
 git remote add origin https://github.com/TU-USUARIO/markdown-editor.git
 git push -u origin main
 ```
+
+---
+
+## 🖥️ Versión de escritorio e instalador Windows (Inno Setup 7)
+
+Además de ejecutarse en el navegador y servirse en **GitHub Pages**, el editor puede compilarse como aplicación nativa de escritorio para Windows e instalarse mediante un ejecutable (`.exe`) generado con **Inno Setup 7**.
+
+### 1. Empaquetar la aplicación
+Desde una terminal en la carpeta `desktop/`:
+
+```powershell
+cd desktop
+npm install
+npm run pack
+```
+
+Esto ejecuta los pasos de preparación:
+1. Sincroniza los archivos web (`index.html`, `css/`, `js/`, `assets/`) en `desktop/src/`.
+2. Genera el icono de Windows multi-resolución `icon.ico`.
+3. Empaqueta el ejecutable en `desktop/dist/Markdown Editor-win32-x64/Markdown Editor.exe`.
+
+### 2. Generar el instalador `.exe` con Inno Setup 7
+
+- **Desde el Explorador de Windows:** Clic derecho sobre [`desktop/setup.iss`](desktop/setup.iss) y pulsa **Compile** (o ábrelo con Inno Setup 7 y pulsa **F9**).
+- **Desde la consola:**
+  ```powershell
+  cd desktop
+  iscc setup.iss
+  ```
+
+El instalador final se creará en:
+```
+desktop/Output/MarkdownEditor_Setup_v1.0.0.exe
+```
+
+Características del instalador:
+- Estilo moderno adaptado a **Windows 10 y Windows 11**.
+- Instalación seleccionable por usuario o para todo el equipo en `Program Files`.
+- Acceso directo opcional en el **Escritorio** y en el **Menú Inicio**.
+- Muestra el acuerdo de tu licencia personalizada [`LICENSE`](LICENSE) para aceptación obligatoria previa.
+- Desinstalador automático registrado en el Panel de Control / Configuración de Windows.
+
+> **Importante para GitHub Pages:** La carpeta `desktop/` está completamente aislada. Ninguno de sus archivos ni compilaciones interfiere con el despliegue web.
 
 ---
 

@@ -1,0 +1,19 @@
+{
+  "name": "markdown-editor-desktop",
+  "version": "1.0.0",
+  "description": "Aplicación de escritorio para Markdown Editor (Windows)",
+  "main": "main.js",
+  "author": "Alberto Ortiz (alberto2005-coder)",
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "icon": "node generate-icon.js",
+    "prepare-files": "node prepare.js",
+    "start": "node prepare.js && electron .",
+    "pack": "node generate-icon.js && node prepare.js && electron-packager . \"Markdown Editor\" --platform=win32 --arch=x64 --out=dist --overwrite --icon=icon.ico --ignore=\"^/dist\" --ignore=\"^/Output\" --ignore=\"^/setup.iss\" --ignore=\"^/README.md\"",
+    "build": "npm run pack"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "electron": "^33.2.1"
+  }
+}

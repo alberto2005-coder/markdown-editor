@@ -39,6 +39,13 @@ markdown-editor/
 ├── .github/workflows/ci.yml  CI: sintaxis, rutas, ids, i18n y servido
 ├── assets/icon.svg     Logo (cabecera, og:image, apple-touch-icon)
 ├── assets/favicon.svg  Favicon
+├── desktop/            Versión de escritorio e instalador Windows
+│   ├── package.json    Scripts de empaquetado (Electron)
+│   ├── main.js         Proceso principal de Electron (aislado y single instance)
+│   ├── prepare.js      Sincronizador de archivos web
+│   ├── generate-icon.js Generador de icon.ico nativo multi-resolución
+│   ├── icon.ico        Icono de Windows (16, 32, 48, 64)
+│   └── setup.iss       Script de Inno Setup 7 para compilar el instalador
 └── docs/
     ├── USUARIO.md      Manual de usuario
     └── DESARROLLADOR.md  Este documento
@@ -431,9 +438,25 @@ usando `ok()` / `mal()` / `aviso()` y ya se ejecuta solo en cada push.
 - Comprimir el `.zip` (método *deflate*) para bibliotecas grandes: ahora es
   *store* a propósito, para poder escribirlo sin librerías.
 
+## 12. Empaquetado de escritorio e instalador (Inno Setup 7)
+
+La carpeta `desktop/` mantiene el empaquetado para Windows completamente desacoplado del código web:
+
+- **Electron wrapper (`desktop/main.js`):**
+  - Carga los recursos locales con `contextIsolation: true`, `sandbox: true` y sin `nodeIntegration` por seguridad.
+  - Implementa `app.requestSingleInstanceLock()` para enfocar la ventana existente si el usuario ejecuta la app dos veces.
+  - Intercepta la navegación externa con `setWindowOpenHandler` para abrir enlaces web en el navegador del sistema (`shell.openExternal`).
+- **Sincronización (`desktop/prepare.js`):** copia de manera determinista `index.html`, `css/`, `js/` y `assets/` a `desktop/src/` antes del empaquetado.
+- **Icono nativo (`desktop/generate-icon.js`):** dibuja y genera sin dependencias externas un archivo `icon.ico` multi-resolución (16x16, 32x32, 48x48 y 64x64) en formato DIB 32-bit compatible con Windows Explorer e Inno Setup.
+- **Instalador Inno Setup 7 ([`desktop/setup.iss`](../desktop/setup.iss)):**
+  - Utiliza `WizardStyle=modern` nativo de Inno Setup 7 (estilo Windows 11).
+  - Admite instalación estándar de usuario (sin permisos UAC) o para todos los usuarios en `Program Files`.
+  - Integra la aceptación obligatoria de [`LICENSE`](../LICENSE) en el asistente previo a la instalación.
+  - Registra accesos directos en el Menú Inicio y Escritorio con su correspondiente desinstalador.
+
 ---
 
-## 12. Licencia
+## 13. Licencia
 
 Licencia personalizada de **Alberto Ortiz (`alberto2005-coder`)**: uso libre con
 fines **no comerciales** y atribución obligatoria — ver [`LICENSE`](../LICENSE).
