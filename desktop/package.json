@@ -13,7 +13,7 @@
     "build": "npm run pack"
   },
   "devDependencies": {
-    "@electron/packager": "^18.3.6",
-    "electron": "^33.2.1"
+    "@electron/packager": "^20.3.0",
+    "electron": "^44.9.0"
   }
 }
