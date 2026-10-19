@@ -1053,8 +1053,19 @@ function desdeB64(s) {
   return new TextDecoder().decode(bytes);
 }
 
+const URL_WEB_PUBLICA = 'https://alberto2005-coder.github.io/markdown-editor/';
+
+function urlBaseCompartir() {
+  if (location.protocol === 'file:' || !location.origin || location.origin === 'null') {
+    return URL_WEB_PUBLICA;
+  }
+  return location.href.split('#')[0];
+}
+
 function compartir() {
-  const enlace = location.href.split('#')[0] + '#d=' + aB64(editor.value);
+  const base = urlBaseCompartir();
+  const sep = (base.endsWith('/') || base.endsWith('.html')) ? '#' : '/#';
+  const enlace = base + sep + 'd=' + aB64(editor.value);
   const aviso = enlace.length > 20000 ? '\n\n' + t('msg.linkwarn') : '';
 
   navigator.clipboard.writeText(enlace)
@@ -1075,7 +1086,9 @@ function cargarDesdeEnlace() {
     editor.value = txt;
     fileNameIn.value = t('msg.sharedname');
     currentId = null;
-    history.replaceState(null, '', location.pathname + location.search);
+    try {
+      history.replaceState(null, '', location.pathname + location.search);
+    } catch (_) {}
     return true;
   } catch (e) { return false; }
 }

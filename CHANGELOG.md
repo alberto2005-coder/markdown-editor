@@ -3,6 +3,12 @@
 Todas las versiones notables de **Markdown Editor**.
 El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [1.10.1] — 2026-10-19
+
+### Fixed
+- **Compartir por enlace en escritorio (#1)**: en la versión de escritorio de Windows (protocolo `file:`), el botón **🔗 Copiar enlace para compartir** ahora genera la URL pública de GitHub Pages (`https://alberto2005-coder.github.io/markdown-editor/#d=...`) en lugar de una ruta local inaccesible (`file:///C:/...`).
+- Protección de `history.replaceState` en entornos locales sin servidor.
+
 ## [1.10.0] — 2026-10-18
 
 ### Added

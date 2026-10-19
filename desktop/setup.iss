@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Markdown Editor"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.10.1"
 #define MyAppPublisher "Alberto Ortiz (alberto2005-coder)"
 #define MyAppURL "https://alberto2005-coder.github.io/markdown-editor/"
 #define MyAppExeName "Markdown Editor.exe"
