@@ -674,6 +674,20 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
+/** Permite abrir directamente un archivo por contenido (ej. desde Electron al hacer doble clic o "Abrir con"). */
+function abrirContenidoDirecto(nombreArchivo, contenido) {
+  if (editor.value.trim()) persistir(true);
+  editor.value = contenido || '';
+  const nom = nombreArchivo || 'documento';
+  fileNameIn.value = nom.replace(/\.(md|markdown|mdown|txt)$/i, '');
+  currentId = null;
+  reiniciarHistorial();
+  render();
+  persistir(true);
+  setMensaje(t('msg.openedfile', { n: nom }));
+}
+window.abrirContenidoDirecto = abrirContenidoDirecto;
+
 /* =========================================================
    4. AUTOGUARDADO + INDICADOR
    ========================================================= */

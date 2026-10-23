@@ -1,6 +1,6 @@
 {
   "name": "markdown-editor-desktop",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "description": "Aplicación de escritorio para Markdown Editor (Windows)",
   "main": "main.js",
   "author": "Alberto Ortiz (alberto2005-coder)",

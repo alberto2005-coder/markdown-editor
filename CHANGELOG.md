@@ -3,6 +3,15 @@
 Todas las versiones notables de **Markdown Editor**.
 El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [1.10.2] — 2026-10-23
+
+### Added
+- **Asociación de archivos y "Abrir con..."**: soporte completo para abrir archivos `.md` y `.markdown` directamente haciendo doble clic o a través del menú contextual "Abrir con..." de Windows, tanto en el inicio como en instancias secundarias.
+- **Versión portable y nuevo instalador**: generación de distribución portable y nuevo instalador Inno Setup con asociaciones de tipos de archivo registradas en el sistema.
+
+### Fixed
+- **Actualización de dependencias y comprobaciones de seguridad**: revisión de componentes de ejecución y sincronización de código entre la versión web y el empaquetado de escritorio.
+
 ## [1.10.1] — 2026-10-19
 
 ### Fixed
@@ -198,6 +207,9 @@ El formato sigue las convenciones de [Keep a Changelog](https://keepachangelog.c
 - Icono y favicon SVG propios.
 - Listo para GitHub Pages (`.nojekyll`).
 
+[1.10.2]: #1102--2026-10-23
+[1.10.1]: #1101--2026-10-19
+[1.10.0]: #1100--2026-10-18
 [1.9.1]: #191--2026-10-07
 [1.9.0]: #190--2026-10-07
 [1.8.0]: #180--2026-10-07

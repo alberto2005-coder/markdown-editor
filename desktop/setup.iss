@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Markdown Editor"
-#define MyAppVersion "1.10.1"
+#define MyAppVersion "1.10.2"
 #define MyAppPublisher "Alberto Ortiz (alberto2005-coder)"
 #define MyAppURL "https://alberto2005-coder.github.io/markdown-editor/"
 #define MyAppExeName "Markdown Editor.exe"
@@ -43,13 +43,23 @@ LicenseFile=..\LICENSE
 ; Permite instalar sin permisos de administrador (por usuario) o con administrador (todos los usuarios)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
+ChangesAssociations=yes
 
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
+[CustomMessages]
+spanish.AssociateFiles=Asociar archivos Markdown (.md, .markdown) con Markdown Editor
+spanish.AssociateGroup=Asociaciones de archivo:
+spanish.FileDocDesc=Documento Markdown
+english.AssociateFiles=Associate Markdown files (.md, .markdown) with Markdown Editor
+english.AssociateGroup=File associations:
+english.FileDocDesc=Markdown Document
+
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "associate"; Description: "{cm:AssociateFiles}"; GroupDescription: "{cm:AssociateGroup}"
 
 [Files]
 ; Archivos empaquetados por "npm run pack"
@@ -66,3 +76,24 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 [Run]
 ; Casilla para ejecutar la aplicación al finalizar el asistente
 Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall skipifsilent
+
+[Registry]
+; Asociaciones de archivo (.md, .markdown)
+Root: HKA; Subkey: "Software\Classes\.md"; ValueType: string; ValueName: ""; ValueData: "MarkdownEditor.File"; Flags: uninsdeletevalue; Tasks: associate
+Root: HKA; Subkey: "Software\Classes\.md\OpenWithProgids"; ValueType: string; ValueName: "MarkdownEditor.File"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associate
+
+Root: HKA; Subkey: "Software\Classes\.markdown"; ValueType: string; ValueName: ""; ValueData: "MarkdownEditor.File"; Flags: uninsdeletevalue; Tasks: associate
+Root: HKA; Subkey: "Software\Classes\.markdown\OpenWithProgids"; ValueType: string; ValueName: "MarkdownEditor.File"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associate
+
+Root: HKA; Subkey: "Software\Classes\MarkdownEditor.File"; ValueType: string; ValueName: ""; ValueData: "{cm:FileDocDesc}"; Flags: uninsdeletekey; Tasks: associate
+Root: HKA; Subkey: "Software\Classes\MarkdownEditor.File\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Tasks: associate
+Root: HKA; Subkey: "Software\Classes\MarkdownEditor.File\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: associate
+
+; Registro en Applications para el menú contextual "Abrir con..." de Windows
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "{#MyAppName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".md"; ValueData: ""
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".markdown"; ValueData: ""
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".mdown"; ValueData: ""
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".txt"; ValueData: ""
